@@ -12,7 +12,7 @@ export default function AuthPage() {
     <div className="min-h-screen bg-loop-gradient">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col lg:flex-row">
         {/* Left — marketing */}
-        <div className="flex flex-1 flex-col justify-between px-6 py-8 sm:px-8 sm:py-10 lg:px-16 lg:py-12">
+        <div className=" hidden lg:flex flex-1 flex-col justify-between px-6 py-1 sm:px-8 sm:py-10 lg:px-16 lg:py-12">
           <LoopLogo />
 
           <div className="my-8 max-w-xl sm:my-12 lg:my-0 hidden lg:block">
@@ -36,13 +36,13 @@ export default function AuthPage() {
             </ul>
           </div>
 
-          <p className="mt-6 text-xs text-slate-400 sm:mt-0">
+          <p className="mt-6 text-xs text-slate-400 sm:mt-0 hidden sm:block">
             © LOOP · Voice of Customer Platform
           </p>
         </div>
 
         {/* Right — auth card */}
-        <div className="flex flex-1 items-center justify-center px-6 py-8 sm:px-8 sm:py-10 lg:px-16">
+        <div className="flex flex-1 items-center justify-center sm:px-8 sm:py-10 lg:px-16">
           <AuthForm />
         </div>
       </div>
