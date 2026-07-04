@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LOOP — Voice of Customer Platform",
+  title: "LOOP — AI Customer Intelligence Platform",
   description:
-    "Close the loop on every piece of customer feedback. Multi-channel inbox, sentiment detection, and AI-powered insights.",
+    "Turn customer feedback into better product decisions. Analyze sentiment, detect themes, and get AI-powered insights from one intelligent platform.",
 };
 
 export default function RootLayout({

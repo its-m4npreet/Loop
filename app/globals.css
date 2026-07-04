@@ -3,8 +3,8 @@
 :root {
   --background: #f4faf6;
   --foreground: #0f172a;
-  --loop-green: #22a06b;
-  --loop-green-dark: #1a8558;
+  --loop-green: #22c55e;
+  --loop-green-dark: #16a34a;
 }
 
 @theme inline {
@@ -14,6 +14,10 @@
   --color-loop-green-dark: var(--loop-green-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
