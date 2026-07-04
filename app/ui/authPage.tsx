@@ -13,7 +13,7 @@ export default function AuthPage() {
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col lg:flex-row">
         {/* Left — marketing */}
         <div className=" hidden lg:flex flex-1 flex-col justify-between px-6 py-1 sm:px-8 sm:py-10 lg:px-16 lg:py-12">
-          <LoopLogo />
+          <LoopLogo variant="landing" />
 
           <div className="my-8 max-w-xl sm:my-12 lg:my-0 hidden lg:block">
             <h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl md:text-4xl lg:text-[2.75rem] lg:leading-[1.15]">
