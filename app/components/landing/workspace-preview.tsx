@@ -1,6 +1,4 @@
 "use client"
-
-import { motion } from "framer-motion"
 import { DashboardPreview } from "./dashboard-preview"
 
 export function WorkspacePreview() {
