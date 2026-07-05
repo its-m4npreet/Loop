@@ -5,7 +5,8 @@ import { RequestDemoButton } from "./request-demo-button"
 const navLinks = [
   { label: "Features", href: "#features" },
   { label: "Solutions", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "AI Loop", href: "#ai-loop" },
+  // { label: "Pricing", href: "#pricing" },
   { label: "Resources", href: "#faq" },
 ]
 

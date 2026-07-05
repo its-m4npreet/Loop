@@ -5,34 +5,28 @@ import { DashboardPreview } from "./dashboard-preview"
 
 export function WorkspacePreview() {
   return (
-    <section className="bg-slate-50 py-20 sm:py-24">
+    <section id="ai-loop" className="bg-slate-50 py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+        <div
+       
           className="mx-auto max-w-2xl text-center"
         >
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            A complete{" "}
-            <span className="text-loop-green">intelligence workspace</span>
+            Chat with{" "}
+            <span className="text-loop-green">LOOP AI</span>
           </h2>
           <p className="mt-4 text-base text-slate-600 sm:text-lg">
-            Dashboards, analytics, themes, reports, and AI — built for product
-            teams that ship.
+            Ask questions, uncover trends, and get instant insights from your
+            customer feedback.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+        <div
+          
           className="mt-14"
         >
-          <DashboardPreview />
-        </motion.div>
+          <DashboardPreview variant="import" />
+        </div>
       </div>
     </section>
   )

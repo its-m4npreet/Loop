@@ -21,7 +21,7 @@ export function LandingPage() {
         <WorkspacePreview />
         <HowItWorks />
         <Testimonials />
-        <Pricing />
+        {/* <Pricing /> */}
         <FAQ />
         <CTABanner />
       </main>
