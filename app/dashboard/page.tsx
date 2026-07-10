@@ -21,7 +21,7 @@ export default async function DashboardPage() {
     <div className="flex min-h-screen items-center justify-center bg-loop-gradient">
       <div className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-lg shadow-slate-200/60">
         <h1 className="text-2xl font-bold text-slate-900">
-          Welcome to Loop, {user.name || "User"}!
+          Welcome to Loop feedback , {user.name || "User"}!
         </h1>
 
         <div className="mt-6 space-y-3 text-sm text-slate-600">
