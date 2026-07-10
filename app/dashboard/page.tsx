@@ -1,6 +1,21 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { Upload, FileBarChart } from 'lucide-react'
+
+import DashboardLayout from './DashboardLayout'
+import StatCard, { type Stat } from '../components/cards/StatCard'
+import ThemeCard, { type Theme } from '../components/cards/ThemeCard'
+import FeedbackVolumeChart  from '../components/chats/FeedbackVolumeChart'
+import SentimentDonutChart  from '../components/chats/SentimentDonutChart'
+import TopThemesChart       from '../components/chats/TopThemesChart'
+import FeedbackChannelsChart from '../components/chats/FeedbackChannelsChart'
+import AIInsightsPanel      from '../components/insights/AIInsightsPanel'
+import FeedbackTable        from '../components/table/FeedbackTable'
+import QuickActions         from '../components/quicksActions/QuickActions'
+
+import { statsData, topThemesCards } from '../data/dashboardData'
+import './Dashboard.css'
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -18,31 +33,60 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-loop-gradient">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-lg shadow-slate-200/60">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Welcome to Loop feedback , {user.name || "User"}!
-        </h1>
-
-        <div className="mt-6 space-y-3 text-sm text-slate-600">
-          <div className="flex justify-between border-b border-slate-100 pb-2">
-            <span className="font-medium text-slate-500">Email</span>
-            <span>{user.email}</span>
-          </div>
-          <div className="flex justify-between border-b border-slate-100 pb-2">
-            <span className="font-medium text-slate-500">Role</span>
-            <span className="capitalize">{user.role.toLowerCase()}</span>
-          </div>
-          <div className="flex justify-between border-b border-slate-100 pb-2">
-            <span className="font-medium text-slate-500">Active</span>
-            <span>{user.isActive ? "Yes" : "No"}</span>
-          </div>
-          <div className="flex justify-between border-b border-slate-100 pb-2">
-            <span className="font-medium text-slate-500">Joined</span>
-            <span>{user.createdAt.toLocaleDateString()}</span>
-          </div>
+    <DashboardLayout>
+      <div className="dashboard-page-header">
+        <div>
+          <h1 className="dashboard-title">Customer Intelligence Dashboard</h1>
+          <p className="dashboard-subtitle">
+            Monitor customer feedback, AI insights, sentiment and trends in real time.
+          </p>
+        </div>
+        <div className="dashboard-header-actions">
+          <button className="btn-secondary" id="upload-csv-btn">
+            <Upload size={15} />
+            Upload CSV
+          </button>
+          <button className="btn-primary" id="generate-report-btn">
+            <FileBarChart size={15} />
+            Generate Report
+          </button>
         </div>
       </div>
-    </div>
+
+      <div className="stats-grid mb-6">
+        {statsData.map((stat) => (
+          <StatCard key={stat.id} stat={stat as Stat} />
+        ))}
+      </div>
+
+      <div className="charts-row charts-row-2-col mb-6">
+        <FeedbackVolumeChart />
+        <SentimentDonutChart />
+      </div>
+
+      <div className="charts-row charts-row-equal mb-6">
+        <TopThemesChart />
+        <FeedbackChannelsChart />
+      </div>
+
+      <div className="mb-6">
+        <AIInsightsPanel />
+      </div>
+
+      <div className="mb-4">
+        <h2 className="section-title">Top Themes</h2>
+      </div>
+      <div className="themes-grid mb-6">
+        {topThemesCards.map((theme) => (
+          <ThemeCard key={theme.id} theme={theme as Theme} />
+        ))}
+      </div>
+
+      <div className="mb-6">
+        <FeedbackTable />
+      </div>
+
+      <QuickActions />
+    </DashboardLayout>
   )
 }
