@@ -19,7 +19,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
     return (
       <div className="custom-tooltip">
         <p className="label">{label}</p>
-        <p className="value">{payload[0]?.value?.toLocaleString()} feedback</p>
+        <p className="value">{payload[0]?.value?.toLocaleString() ?? 0} feedback</p>
       </div>
     );
   }
