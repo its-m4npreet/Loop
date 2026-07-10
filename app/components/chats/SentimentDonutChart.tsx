@@ -16,8 +16,8 @@ function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
   if (active && payload && payload.length) {
     return (
       <div className="custom-tooltip">
-        <p className="label">{payload[0].name}</p>
-        <p className="value">{payload[0].value}%</p>
+        <p className="label">{payload[0]?.name}</p>
+        <p className="value">{payload[0]?.value}%</p>
       </div>
     );
   }
