@@ -22,7 +22,7 @@ import './Sidebar.css';
 interface NavItem {
   id: string;
   label: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   href: string;
 }
 
