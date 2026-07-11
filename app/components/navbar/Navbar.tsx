@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { logout } from '../../utils/logout';
 import {
   Search,
   Bell,
@@ -188,7 +189,7 @@ function Navbar({ collapsed, onToggleMobile }: NavbarProps) {
                 );
               })}
               <div className="profile-menu-divider" />
-              <button className="profile-menu-item danger" id="profile-menu-logout">
+              <button className="profile-menu-item danger" id="profile-menu-logout" onClick={logout}>
                 <LogOut size={15} />
                 Logout
               </button>

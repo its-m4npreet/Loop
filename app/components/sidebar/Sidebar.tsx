@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { logout } from '../../utils/logout';
 import {
   LayoutDashboard,
   MessageSquare,
@@ -136,6 +137,7 @@ function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: Sid
           <button
             className="sidebar-logout-btn"
             title={collapsed ? 'Logout' : undefined}
+            onClick={logout}
           >
             <LogOut className="nav-icon" size={18} />
             <span className="nav-label">Logout</span>
