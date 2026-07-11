@@ -79,11 +79,26 @@
 @media (max-width: 640px) {
   .donut-chart-wrap {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
   }
 
   .donut-legend {
     padding-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .donut-legend-item {
+    gap: var(--space-1);
+  }
+
+  .donut-legend-label {
+    font-size: 12px;
+  }
+
+  .donut-legend-value {
+    font-size: 12px;
   }
 }
 
@@ -106,4 +121,14 @@
 
 .custom-tooltip .value {
   font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .chart-card {
+    padding: var(--space-4);
+  }
+
+  .chart-card-title {
+    font-size: 13px;
+  }
 }

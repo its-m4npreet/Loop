@@ -196,7 +196,10 @@ function FeedbackTable() {
           <thead>
             <tr>
               {COLUMNS.map((col) => (
-                <th key={col.key} onClick={() => handleSort(col.key)}>
+                <th key={col.key} onClick={() => handleSort(col.key)} className={
+                    col.key === 'channel' ? 'hide-mobile-sm' :
+                    col.key === 'theme' || col.key === 'time' ? 'hide-mobile' : ''
+                  }>
                   <div className="th-sortable">
                     {col.label}
                     <SortIcon column={col.key} sortConfig={sortConfig} />
@@ -234,14 +237,14 @@ function FeedbackTable() {
                       <div className="feedback-text">{row.feedback}</div>
                     </td>
 
-                    <td>
+                    <td className="hide-mobile-sm">
                       <span className="channel-badge">
                         <ChannelIcon size={11} />
                         {row.channel}
                       </span>
                     </td>
 
-                    <td>{row.theme}</td>
+                    <td className="hide-mobile">{row.theme}</td>
 
                     <td>
                       <span className={`sentiment-badge ${sClass}`}>
@@ -255,7 +258,7 @@ function FeedbackTable() {
                       </span>
                     </td>
 
-                    <td className="time-cell">{row.time}</td>
+                    <td className="time-cell hide-mobile">{row.time}</td>
                   </tr>
                 );
               })

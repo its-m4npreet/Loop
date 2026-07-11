@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -15,7 +15,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Zap,
+  Plus,
+  FolderOpen,
+  Infinity,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -44,8 +46,17 @@ interface SidebarProps {
   onCloseMobile: () => void;
 }
 
+const MAX_WORKSPACES = 2;
+
+const initialWorkspaces = [
+  { id: 'ws-1', name: 'LOOP Workspace', active: true },
+  { id: 'ws-2', name: 'Side Project', active: false },
+];
+
 function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
+  const [workspaces, setWorkspaces] = useState(initialWorkspaces);
+  const [activeWs, setActiveWs] = useState('ws-1');
 
   const sidebarClass = [
     'sidebar',
@@ -64,7 +75,7 @@ function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: Sid
       <aside className={sidebarClass} aria-label="Main navigation">
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">
-            <Zap size={18} />
+            <Infinity size={18} />
           </div>
           <div className="sidebar-logo-text">
             <span className="sidebar-logo-name">LOOP</span>
@@ -99,6 +110,25 @@ function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: Sid
 
           {!collapsed && (
             <p className="sidebar-section-label">Workspace</p>
+          )}
+
+          {!collapsed && workspaces.map((ws) => (
+            <button
+              key={ws.id}
+              className={`sidebar-ws-item ${activeWs === ws.id ? 'active' : ''}`}
+              onClick={() => setActiveWs(ws.id)}
+              title={ws.name}
+            >
+              <FolderOpen className="nav-icon" size={16} />
+              <span className="nav-label">{ws.name}</span>
+            </button>
+          ))}
+
+          {!collapsed && workspaces.length < MAX_WORKSPACES && (
+            <button className="sidebar-ws-add" title="Add workspace">
+              <Plus size={14} />
+              <span className="nav-label">Add Workspace</span>
+            </button>
           )}
         </nav>
 

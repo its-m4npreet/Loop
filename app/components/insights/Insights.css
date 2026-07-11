@@ -165,3 +165,21 @@
   color: var(--color-text-muted);
   line-height: 1.5;
 }
+
+@media (max-width: 480px) {
+  .insights-panel {
+    padding: var(--space-4);
+  }
+
+  .insight-card {
+    padding: var(--space-3);
+  }
+
+  .insights-header {
+    flex-wrap: wrap;
+  }
+
+  .insights-ai-badge {
+    margin-left: 0;
+  }
+}

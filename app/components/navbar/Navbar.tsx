@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Search,
   Bell,
@@ -168,16 +169,22 @@ function Navbar({ collapsed, onToggleMobile }: NavbarProps) {
             </div>
             <div className="profile-menu-list">
               {[
-                { label: 'My Profile',  icon: User,     id: 'profile-menu-profile'   },
-                { label: 'Workspace',   icon: Briefcase,id: 'profile-menu-workspace' },
-                { label: 'Settings',    icon: Settings, id: 'profile-menu-settings'  },
+                { label: 'My Profile',  icon: User,     href: '/profile',  id: 'profile-menu-profile'   },
+                { label: 'Workspace',   icon: Briefcase, href: '/workspace', id: 'profile-menu-workspace' },
+                { label: 'Settings',    icon: Settings, href: '/settings', id: 'profile-menu-settings'  },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <button key={item.id} id={item.id} className="profile-menu-item">
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    id={item.id}
+                    className="profile-menu-item"
+                    onClick={() => setProfileOpen(false)}
+                  >
                     <Icon size={15} />
                     {item.label}
-                  </button>
+                  </Link>
                 );
               })}
               <div className="profile-menu-divider" />

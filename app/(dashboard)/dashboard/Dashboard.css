@@ -92,6 +92,12 @@
 
 @media (max-width: 640px) {
   .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .stats-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -149,6 +155,12 @@
 }
 
 @media (max-width: 640px) {
+  .themes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
   .themes-grid {
     grid-template-columns: 1fr;
   }
@@ -209,6 +221,17 @@
 
   .dashboard-subtitle {
     font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header-actions {
+    display: none;
+  }
+
+  .dashboard-title,
+  .dashboard-subtitle {
+    display: none;
   }
 }
 
