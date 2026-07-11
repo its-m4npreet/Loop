@@ -19,6 +19,7 @@ import {
 import { recentFeedbackData } from '../../data/dashboardData';
 import useDebounce from '../../hooks/useDebounce';
 import { sentimentClass, statusClass } from '../../utils/formatters';
+import Avatar from '../Avatar';
 import './Tables.css';
 
 const PAGE_SIZE = 5;
@@ -53,7 +54,6 @@ function SortIcon({ column, sortConfig }: SortIconProps) {
 interface FeedbackRow {
   id: number;
   customer: string;
-  avatar: string;
   feedback: string;
   channel: string;
   theme: string;
@@ -228,7 +228,7 @@ function FeedbackTable() {
                   <tr key={row.id}>
                     <td>
                       <div className="customer-cell">
-                        <div className="customer-avatar">{row.avatar}</div>
+                        <Avatar name={row.customer} size="sm" />
                         <span className="customer-name">{row.customer}</span>
                       </div>
                     </td>

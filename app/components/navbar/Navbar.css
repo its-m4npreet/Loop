@@ -290,18 +290,21 @@
 .navbar-avatar {
   width: 38px;
   height: 38px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border: 2px solid transparent;
+  border-radius: var(--radius-full);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   user-select: none;
+  overflow: hidden;
+}
+
+.navbar-avatar .avatar {
+  width: 34px;
+  height: 34px;
+  border: none;
 }
 
 .navbar-avatar:hover,

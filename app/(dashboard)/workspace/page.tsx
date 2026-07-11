@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import { Users, FolderOpen, Plus } from 'lucide-react'
+import { FolderOpen, Plus } from 'lucide-react'
+import Avatar from '@/app/components/Avatar'
 
 import './page.css'
 
@@ -75,9 +76,7 @@ export default async function WorkspacePage() {
             {workspaceMembers.map((m) => (
               <div key={m.id} className="settings-item">
                 <div className="workspace-member-info">
-                  <div className="workspace-member-avatar">
-                    {m.name.split(' ').map(n => n[0]).join('')}
-                  </div>
+                  <Avatar name={m.name} size="sm" />
                   <div>
                     <div className="settings-item-label">{m.name}</div>
                     <div className="settings-item-desc">{m.email}</div>

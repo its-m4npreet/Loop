@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { notifications } from '../../data/dashboardData';
+import Avatar from '../Avatar';
 import './Navbar.css';
 
 const NOTIF_ICONS: Record<string, LucideIcon> = {
@@ -41,9 +42,12 @@ interface Notification {
 interface NavbarProps {
   collapsed: boolean;
   onToggleMobile: () => void;
+  userName?: string | null;
+  userEmail?: string | null;
+  userImage?: string | null;
 }
 
-function Navbar({ collapsed, onToggleMobile }: NavbarProps) {
+function Navbar({ collapsed, onToggleMobile, userName, userEmail, userImage }: NavbarProps) {
   const [notifOpen, setNotifOpen]     = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifList, setNotifList]     = useState<Notification[]>(notifications);
@@ -160,13 +164,13 @@ function Navbar({ collapsed, onToggleMobile }: NavbarProps) {
             id="profile-avatar-btn"
             onKeyDown={(e) => e.key === 'Enter' && setProfileOpen((v) => !v)}
           >
-            JD
+            <Avatar name={userName} src={userImage} size="md" />
           </div>
 
           <div className={`navbar-dropdown profile-dropdown ${profileOpen ? 'open' : ''}`}>
             <div className="profile-dropdown-header">
-              <p className="profile-name">Jane Doe</p>
-              <p className="profile-email">jane.doe@company.com</p>
+              <p className="profile-name">{userName || 'User'}</p>
+              <p className="profile-email">{userEmail || 'user@example.com'}</p>
             </div>
             <div className="profile-menu-list">
               {[

@@ -6,9 +6,12 @@ import Sidebar from '../components/sidebar/Sidebar';
 
 interface DashboardLayoutProps {
   children: ReactNode;
+  userName?: string | null;
+  userEmail?: string | null;
+  userImage?: string | null;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, userName, userEmail, userImage }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -24,6 +27,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <Navbar
           collapsed={collapsed}
           onToggleMobile={() => setMobileOpen((v) => !v)}
+          userName={userName}
+          userEmail={userEmail}
+          userImage={userImage}
         />
         <main className="dashboard-content">
           {children}

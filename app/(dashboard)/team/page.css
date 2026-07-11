@@ -62,20 +62,6 @@
   gap: var(--space-3);
 }
 
-.team-member-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 .team-member-name {
   font-size: 14px;
   font-weight: 600;

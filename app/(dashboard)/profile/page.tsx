@@ -1,9 +1,31 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import { Camera } from 'lucide-react'
+import { Shield, Calendar, Clock } from 'lucide-react'
+import ProfileAvatar from "./ProfileAvatar"
+import ProfileEditor from "./ProfileEditor"
 
 import './page.css'
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+function formatRelative(date: Date): string {
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  if (days === 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days} days ago`
+  if (days < 30) return `${Math.floor(days / 7)} weeks ago`
+  if (days < 365) return `${Math.floor(days / 30)} months ago`
+  return `${Math.floor(days / 365)} years ago`
+}
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -13,6 +35,8 @@ export default async function ProfilePage() {
     where: { id: session.user.id },
   })
   if (!user) redirect("/api/auth")
+
+  const roleDisplay = user.role === 'ADMIN' ? 'Admin' : 'Member'
 
   return (
     <>
@@ -24,63 +48,121 @@ export default async function ProfilePage() {
       </div>
 
       <div className="profile-layout">
-        <div className="profile-card">
-          <div className="profile-avatar-section">
-            <div className="profile-avatar-large">
-              {user.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
-            <button className="profile-avatar-edit-btn">
-              <Camera size={14} />
-              Change Photo
-            </button>
-          </div>
-          <div className="profile-info">
-            <div className="profile-info-name">{user.name || 'User'}</div>
+        <div className="profile-sidebar">
+          <div className="profile-card">
+            <ProfileAvatar userName={user.name} userImage={user.image} />
+            <ProfileEditor initialName={user.name || ''} />
             <div className="profile-info-email">{user.email}</div>
+            <div className="profile-role-badge">
+              <Shield size={12} />
+              {roleDisplay}
+            </div>
+          </div>
+
+          <div className="profile-meta-card">
+            <h4 className="profile-meta-title">Account</h4>
+            <div className="profile-meta-row">
+              <Calendar size={14} className="profile-meta-icon" />
+              <div>
+                <div className="profile-meta-label">Joined</div>
+                <div className="profile-meta-value">{formatDate(user.createdAt)}</div>
+              </div>
+            </div>
+            <div className="profile-meta-row">
+              <Clock size={14} className="profile-meta-icon" />
+              <div>
+                <div className="profile-meta-label">Last updated</div>
+                <div className="profile-meta-value">{formatRelative(user.updatedAt)}</div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="profile-sections">
           <div className="settings-section">
-            <h3 className="settings-section-title">Personal Information</h3>
+            {/* <h3 className="settings-section-title">Personal Information</h3> */}
             <div className="settings-card">
-              {[
-                { label: 'Full name', value: user.name || 'Not set', desc: 'Your display name' },
-                { label: 'Email', value: user.email || 'Not set', desc: 'Your email address' },
-                { label: 'Role', value: 'Admin', desc: 'Your workspace role' },
-              ].map((item, i) => (
-                <div key={i} className="settings-item">
-                  <div>
-                    <div className="settings-item-label">{item.label}</div>
-                    <div className="settings-item-desc">{item.desc}</div>
-                  </div>
-                  <div className="settings-item-right">
-                    <span className="settings-item-value">{item.value}</span>
-                    <button className="settings-item-btn">Edit</button>
-                  </div>
+              <div className="settings-item">
+                <div>
+                  <div className="settings-item-label">Full name</div>
+                  <div className="settings-item-desc">Your display name across the platform</div>
                 </div>
-              ))}
+                <div className="settings-item-right">
+                  <span className="settings-item-value">{user.name || 'Not set'}</span>
+                </div>
+              </div>
+              <div className="settings-item">
+                <div>
+                  <div className="settings-item-label">Email address</div>
+                  <div className="settings-item-desc">Used for sign-in and notifications</div>
+                </div>
+                <div className="settings-item-right">
+                  <span className="settings-item-value">{user.email}</span>
+                </div>
+              </div>
+              <div className="settings-item">
+                <div>
+                  <div className="settings-item-label">Role</div>
+                  <div className="settings-item-desc">Your workspace permission level</div>
+                </div>
+                <div className="settings-item-right">
+                  <span className="settings-item-value">{roleDisplay}</span>
+                </div>
+              </div>
+              <div className="settings-item">
+                <div>
+                  <div className="settings-item-label">User ID</div>
+                  <div className="settings-item-desc">Your unique identifier</div>
+                </div>
+                <div className="settings-item-right">
+                  <span className="settings-item-value settings-item-mono">{user.id.slice(0, 12)}…</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="settings-section">
+          {/* <div className="settings-section">
             <h3 className="settings-section-title">Security</h3>
             <div className="settings-card">
-              {[
-                { label: 'Password', value: '••••••••', desc: 'Last changed 30 days ago' },
-                { label: 'Two-factor auth', value: 'Off', desc: 'Add an extra layer of security' },
-              ].map((item, i) => (
-                <div key={i} className="settings-item">
-                  <div>
-                    <div className="settings-item-label">{item.label}</div>
-                    <div className="settings-item-desc">{item.desc}</div>
-                  </div>
-                  <div className="settings-item-right">
-                    <span className="settings-item-value">{item.value}</span>
-                    <button className="settings-item-btn">Change</button>
+              <div className="settings-item">
+                <div>
+                  <div className="settings-item-label">Password</div>
+                  <div className="settings-item-desc">
+                    {user.passwordHash ? 'Your account is secured with a password' : 'No password set (OAuth account)'}
                   </div>
                 </div>
-              ))}
+                <div className="settings-item-right">
+                  {user.passwordHash && (
+                    <span className="settings-item-value">••••••••</span>
+                  )}
+                  {user.passwordHash && (
+                    <button className="settings-item-btn">Change</button>
+                  )}
+                </div>
+              </div>
+              <div className="settings-item">
+                <div>
+                  <div className="settings-item-label">Two-factor authentication</div>
+                  <div className="settings-item-desc">Add an extra layer of security to your account</div>
+                </div>
+                <div className="settings-item-right">
+                  <span className="settings-item-value">Off</span>
+                  <button className="settings-item-btn">Enable</button>
+                </div>
+              </div>
+            </div>
+          </div> */}
+
+          <div className="settings-section">
+            {/* <h3 className="settings-section-title">Danger Zone</h3> */}
+            <div className="settings-card">
+              <div className="settings-item">
+                <div>
+                  <div className="settings-item-label">Delete account</div>
+                  <div className="settings-item-desc">Permanently delete your account and all associated data</div>
+                </div>
+                <button className="settings-item-btn danger">Delete</button>
+              </div>
             </div>
           </div>
         </div>

@@ -162,7 +162,6 @@ export const recentFeedbackData = [
   {
     id: 1,
     customer: 'Aisha Patel',
-    avatar: 'AP',
     feedback: 'The billing page is really confusing. I was charged twice and can\'t find a way to get a refund.',
     channel: 'Email',
     theme: 'Billing',
@@ -173,7 +172,6 @@ export const recentFeedbackData = [
   {
     id: 2,
     customer: 'Marcus Johnson',
-    avatar: 'MJ',
     feedback: 'The new onboarding tutorial is amazing! Got my team up and running in under 30 minutes.',
     channel: 'In-App',
     theme: 'Onboarding',
@@ -184,7 +182,6 @@ export const recentFeedbackData = [
   {
     id: 3,
     customer: 'Priya Sharma',
-    avatar: 'PS',
     feedback: 'Dashboard loads very slowly when we have more than 500 records. Please optimize performance.',
     channel: 'Support Chat',
     theme: 'Performance',
@@ -195,7 +192,6 @@ export const recentFeedbackData = [
   {
     id: 4,
     customer: 'Tom Williams',
-    avatar: 'TW',
     feedback: 'Great product overall. Would love to see more customization options for reports.',
     channel: 'Email',
     theme: 'Feature Requests',
@@ -206,7 +202,6 @@ export const recentFeedbackData = [
   {
     id: 5,
     customer: 'Sara Kim',
-    avatar: 'SK',
     feedback: 'Support team responded quickly and resolved my issue within the hour. Excellent service.',
     channel: 'Support Chat',
     theme: 'Support Quality',
@@ -217,7 +212,6 @@ export const recentFeedbackData = [
   {
     id: 6,
     customer: 'David Chen',
-    avatar: 'DC',
     feedback: 'UI feels a bit dated compared to competitors. Needs a refresh especially on mobile.',
     channel: 'Twitter/X',
     theme: 'UI/UX',
@@ -228,7 +222,6 @@ export const recentFeedbackData = [
   {
     id: 7,
     customer: 'Emma Rodriguez',
-    avatar: 'ER',
     feedback: 'Works exactly as expected. Nothing surprising, does the job.',
     channel: 'App Store',
     theme: 'General',
@@ -239,7 +232,6 @@ export const recentFeedbackData = [
   {
     id: 8,
     customer: 'Raj Kapoor',
-    avatar: 'RK',
     feedback: 'Integration with Slack is brilliant. Saved hours of manual reporting every week.',
     channel: 'In-App',
     theme: 'Onboarding',
@@ -250,7 +242,6 @@ export const recentFeedbackData = [
   {
     id: 9,
     customer: 'Lena Fischer',
-    avatar: 'LF',
     feedback: 'Invoice PDF doesn\'t render correctly in Firefox. Works fine in Chrome though.',
     channel: 'Email',
     theme: 'Billing',
@@ -261,7 +252,6 @@ export const recentFeedbackData = [
   {
     id: 10,
     customer: 'James O\'Brien',
-    avatar: 'JO',
     feedback: 'Could you add bulk import for historical feedback? That would be super helpful for our team.',
     channel: 'Support Chat',
     theme: 'Feature Requests',
