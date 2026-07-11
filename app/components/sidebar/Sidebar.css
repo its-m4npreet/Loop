@@ -184,6 +184,7 @@
   width: 100%;
   text-align: left;
   overflow: hidden;
+  text-decoration: none;
 }
 
 .sidebar-ws-item:hover {

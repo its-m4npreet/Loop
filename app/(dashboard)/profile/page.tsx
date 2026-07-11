@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import { Shield, Calendar, Clock } from 'lucide-react'
+import { Shield, Calendar, Clock, FolderOpen } from 'lucide-react'
 import ProfileAvatar from "./ProfileAvatar"
 import ProfileEditor from "./ProfileEditor"
 
@@ -33,6 +33,7 @@ export default async function ProfilePage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
+    include: { workspace: true },
   })
   if (!user) redirect("/api/auth")
 
@@ -57,6 +58,26 @@ export default async function ProfilePage() {
               <Shield size={12} />
               {roleDisplay}
             </div>
+          </div>
+
+          <div className="profile-meta-card">
+            <h4 className="profile-meta-title">Workspace</h4>
+            <div className="profile-meta-row">
+              <FolderOpen size={14} className="profile-meta-icon" />
+              <div>
+                <div className="profile-meta-label">Current workspace</div>
+                <div className="profile-meta-value">{user.workspace?.name || 'No workspace'}</div>
+              </div>
+            </div>
+            {user.workspace && (
+              <div className="profile-meta-row">
+                <Calendar size={14} className="profile-meta-icon" />
+                <div>
+                  <div className="profile-meta-label">Workspace created</div>
+                  <div className="profile-meta-value">{formatDate(user.workspace.createdAt)}</div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="profile-meta-card">

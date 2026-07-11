@@ -1,16 +1,18 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import { FolderOpen, Plus } from 'lucide-react'
+import { FolderOpen } from 'lucide-react'
 import Avatar from '@/app/components/Avatar'
 
 import './page.css'
 
-const workspaceMembers = [
-  { id: 1, name: 'Jane Doe', email: 'jane.doe@company.com', role: 'Owner' },
-  { id: 2, name: 'John Smith', email: 'john.smith@company.com', role: 'Member' },
-  { id: 3, name: 'Alice Johnson', email: 'alice.j@company.com', role: 'Member' },
-];
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
 
 export default async function WorkspacePage() {
   const session = await auth()
@@ -18,8 +20,40 @@ export default async function WorkspacePage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
+    include: {
+      workspace: {
+        include: {
+          users: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              role: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      },
+    },
   })
   if (!user) redirect("/api/auth")
+
+  const workspace = user.workspace
+
+  if (!workspace) {
+    return (
+      <>
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Workspace</h1>
+            <p className="page-subtitle">You are not part of a workspace yet.</p>
+          </div>
+        </div>
+      </>
+    )
+  }
 
   return (
     <>
@@ -36,8 +70,8 @@ export default async function WorkspacePage() {
             <FolderOpen size={24} />
           </div>
           <div className="workspace-details">
-            <h3 className="workspace-name">LOOP Workspace</h3>
-            <p className="workspace-plan">Pro Plan · Since Jul 2026</p>
+            <h3 className="workspace-name">{workspace.name}</h3>
+            <p className="workspace-plan">{workspace.users.length} members</p>
           </div>
         </div>
 
@@ -45,10 +79,10 @@ export default async function WorkspacePage() {
           <h3 className="settings-section-title">Workspace Details</h3>
           <div className="settings-card">
             {[
-              { label: 'Workspace name', value: 'LOOP Workspace', desc: 'The name of your organization' },
-              { label: 'Workspace ID', value: user.id.slice(0, 8) + '…', desc: 'Unique identifier' },
-              { label: 'Plan', value: 'Pro', desc: 'Current subscription plan' },
-              { label: 'Created', value: 'Jul 2026', desc: 'When this workspace was created' },
+              { label: 'Workspace name', value: workspace.name, desc: 'The name of your organization' },
+              { label: 'Workspace ID', value: workspace.id.slice(0, 8) + '…', desc: 'Unique identifier' },
+              { label: 'Members', value: `${workspace.users.length}`, desc: 'Total team members' },
+              { label: 'Created', value: formatDate(workspace.createdAt), desc: 'When this workspace was created' },
             ].map((item, i) => (
               <div key={i} className="settings-item">
                 <div>
@@ -57,7 +91,6 @@ export default async function WorkspacePage() {
                 </div>
                 <div className="settings-item-right">
                   <span className="settings-item-value">{item.value}</span>
-                  <button className="settings-item-btn">Change</button>
                 </div>
               </div>
             ))}
@@ -65,25 +98,21 @@ export default async function WorkspacePage() {
         </div>
 
         <div className="settings-section">
-          <div className="workspace-members-header">
-            <h3 className="settings-section-title">Members</h3>
-            <button className="btn-primary" style={{ height: 32, fontSize: 12 }}>
-              <Plus size={14} />
-              Invite
-            </button>
-          </div>
+          <h3 className="settings-section-title">Members</h3>
           <div className="settings-card">
-            {workspaceMembers.map((m) => (
+            {workspace.users.map((m) => (
               <div key={m.id} className="settings-item">
                 <div className="workspace-member-info">
-                  <Avatar name={m.name} size="sm" />
+                  <Avatar name={m.name} src={m.image} size="sm" />
                   <div>
-                    <div className="settings-item-label">{m.name}</div>
+                    <div className="settings-item-label">{m.name || 'User'}</div>
                     <div className="settings-item-desc">{m.email}</div>
                   </div>
                 </div>
                 <div className="settings-item-right">
-                  <span className="settings-item-value">{m.role}</span>
+                  <span className={`team-member-status ${m.role === 'ADMIN' ? 'active' : ''}`}>
+                    {m.role === 'ADMIN' ? 'Admin' : 'Member'}
+                  </span>
                 </div>
               </div>
             ))}

@@ -33,6 +33,62 @@
   margin-top: 2px;
 }
 
+/* ── Search ── */
+.team-search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
+  height: 40px;
+  margin-bottom: var(--space-5);
+  transition: border-color var(--transition-fast);
+}
+
+.team-search-bar:focus-within {
+  border-color: var(--color-accent);
+}
+
+.team-search-bar svg {
+  color: var(--color-text-light);
+  flex-shrink: 0;
+}
+
+.team-search-bar input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.team-search-bar input::placeholder {
+  color: var(--color-text-light);
+}
+
+.team-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.team-search-clear:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* ── Team List ── */
 .team-list {
   display: flex;
   flex-direction: column;
@@ -66,6 +122,18 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.team-you-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-light);
 }
 
 .team-member-email {
@@ -106,6 +174,11 @@
   font-weight: 500;
 }
 
+/* ── More Menu ── */
+.team-member-menu-wrap {
+  position: relative;
+}
+
 .team-member-more {
   width: 32px;
   height: 32px;
@@ -117,12 +190,217 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .team-member-more:hover {
   background: var(--color-surface);
   color: var(--color-text);
+}
+
+.team-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 180px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 50;
+  padding: var(--space-1);
+  animation: team-dropdown-in 0.12s ease-out;
+}
+
+@keyframes team-dropdown-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.team-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.team-dropdown-item:hover:not(:disabled) {
+  background: var(--color-surface);
+}
+
+.team-dropdown-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.team-dropdown-item.danger {
+  color: var(--color-negative-text);
+}
+
+.team-dropdown-item.danger:hover:not(:disabled) {
+  background: var(--color-negative-bg);
+}
+
+/* ── Empty state ── */
+.team-empty {
+  text-align: center;
+  padding: var(--space-10) var(--space-4);
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+/* ── Modal ── */
+.team-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: var(--space-4);
+  animation: team-modal-overlay-in 0.15s ease-out;
+}
+
+@keyframes team-modal-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.team-modal {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+  animation: team-modal-in 0.2s ease-out;
+}
+
+@keyframes team-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.team-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-5) 0;
+}
+
+.team-modal-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.team-modal-close {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.team-modal-close:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.team-modal-body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.team-modal-body p {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.team-modal-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.team-modal-label input,
+.team-modal-label select {
+  height: 38px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.team-modal-label input:focus,
+.team-modal-label select:focus {
+  border-color: var(--color-accent);
+}
+
+.team-modal-label input::placeholder {
+  color: var(--color-text-light);
+}
+
+.team-modal-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-negative-text);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-negative-bg);
+  border-radius: var(--radius-md);
+}
+
+.team-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: 0 var(--space-5) var(--space-5);
+}
+
+.team-modal-footer .btn-primary {
+  height: 36px;
+}
+
+.team-modal-footer .btn-secondary {
+  height: 36px;
+}
+
+.btn-primary.btn-danger {
+  background: var(--color-negative-text);
+}
+
+.btn-primary.btn-danger:hover {
+  background: #b91c1c;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 @media (max-width: 640px) {

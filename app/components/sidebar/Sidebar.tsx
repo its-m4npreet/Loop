@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { logout } from '../../utils/logout';
@@ -47,17 +47,25 @@ interface SidebarProps {
   onCloseMobile: () => void;
 }
 
-const MAX_WORKSPACES = 2;
-
-const initialWorkspaces = [
-  { id: 'ws-1', name: 'LOOP Workspace', active: true },
-  { id: 'ws-2', name: 'Side Project', active: false },
-];
+interface Workspace {
+  id: string;
+  name: string;
+}
 
 function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
-  const [workspaces, setWorkspaces] = useState(initialWorkspaces);
-  const [activeWs, setActiveWs] = useState('ws-1');
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [activeWs, setActiveWs] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/workspace')
+      .then(r => r.json())
+      .then(data => {
+        setWorkspaces(data.workspaces || [])
+        setActiveWs(data.activeId)
+      })
+      .catch(() => {})
+  }, [])
 
   const sidebarClass = [
     'sidebar',
@@ -114,22 +122,27 @@ function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: Sid
           )}
 
           {!collapsed && workspaces.map((ws) => (
-            <button
+            <Link
               key={ws.id}
+              href="/workspace"
               className={`sidebar-ws-item ${activeWs === ws.id ? 'active' : ''}`}
-              onClick={() => setActiveWs(ws.id)}
+              onClick={onCloseMobile}
               title={ws.name}
             >
               <FolderOpen className="nav-icon" size={16} />
               <span className="nav-label">{ws.name}</span>
-            </button>
+            </Link>
           ))}
 
-          {!collapsed && workspaces.length < MAX_WORKSPACES && (
-            <button className="sidebar-ws-add" title="Add workspace">
-              <Plus size={14} />
-              <span className="nav-label">Add Workspace</span>
-            </button>
+          {!collapsed && workspaces.length === 0 && (
+            <Link
+              href="/workspace"
+              className="sidebar-ws-item"
+              onClick={onCloseMobile}
+            >
+              <FolderOpen className="nav-icon" size={16} />
+              <span className="nav-label">No workspace</span>
+            </Link>
           )}
         </nav>
 
