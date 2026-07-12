@@ -1,3 +1,231 @@
 /* Analytics page styles */
 @import '../dashboard/Dashboard.css';
 @import '../../components/chats/Charts.css';
+
+/* Analytics Stats Grid */
+.analytics-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 1024px) {
+  .analytics-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .analytics-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Stat Cards */
+.analytics-stat-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.analytics-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent);
+}
+
+.analytics-stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.analytics-stat-icon-wrapper.blue {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+}
+
+.analytics-stat-icon-wrapper.green {
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+}
+
+.analytics-stat-icon-wrapper.orange {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.analytics-stat-icon-wrapper.purple {
+  background: var(--color-purple-bg);
+  color: var(--color-purple-text);
+}
+
+.analytics-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.analytics-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.analytics-stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+/* Theme Growth Tracker */
+.theme-growth-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .theme-growth-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.theme-growth-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: border-color var(--transition-fast);
+}
+
+.theme-growth-card:hover {
+  border-color: var(--color-border);
+}
+
+.theme-growth-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.theme-growth-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.theme-growth-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.theme-growth-stats {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.theme-growth-total {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.theme-growth-change {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.theme-growth-change.up {
+  color: var(--color-accent-dark);
+}
+
+.theme-growth-change.down {
+  color: var(--color-negative-text);
+}
+
+.theme-growth-empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+/* Period Comparison Widget */
+.period-comparison-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+}
+
+.period-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.period-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.period-stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.period-stat-delta {
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.period-stat-delta.delta-positive {
+  color: var(--color-accent-dark);
+}
+
+.period-stat-delta.delta-negative {
+  color: var(--color-negative-text);
+}
+
+.period-stat-vs {
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: 2px;
+}
+
+.analytics-stat-icon-wrapper.red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.analytics-stat-icon-wrapper.teal {
+  background: rgba(20, 184, 166, 0.15);
+  color: #14b8a6;
+}
+
