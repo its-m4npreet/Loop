@@ -23,7 +23,10 @@ model Workspace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users User[]
+  users     User[]
+  feedbacks Feedback[]
+  themes    Theme[]
+  reports   Report[]
 }
 
 model User {
@@ -42,6 +45,7 @@ model User {
   accounts  Account[]
   sessions  Session[]
   workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  reports   Report[]
 }
 
 model Account {
@@ -77,4 +81,92 @@ model VerificationToken {
   expires    DateTime
 
   @@id([identifier, token])
+}
+
+// ── Analytics & Reports Models ──
+
+enum FeedbackStatus {
+  NEW
+  REVIEWED
+  ACTIONED
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum ReportStatus {
+  COMPLETED
+  DRAFT
+  SCHEDULED
+}
+
+model Feedback {
+  id             String         @id @default(cuid())
+  content        String         @db.Text
+  channel        String
+  sourceRef      String?
+  customerLabel  String?
+  sentiment      Sentiment      @default(NEUTRAL)
+  sentimentScore Float          @default(0)
+  status         FeedbackStatus @default(NEW)
+  responseTime   Int?           // minutes
+  satisfaction   Float?         // 1.0–5.0
+  createdAt      DateTime       @default(now())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  themes FeedbackTheme[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, sentiment])
+}
+
+model Theme {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+  color       String @default("#22C55E")
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  feedbacks FeedbackTheme[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+}
+
+model FeedbackTheme {
+  feedbackId String
+  themeId    String
+  confidence Float  @default(0.8)
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  theme    Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+
+  @@id([feedbackId, themeId])
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  title       String
+  type        String       @default("summary")
+  status      ReportStatus @default(DRAFT)
+  periodStart DateTime?
+  periodEnd   DateTime?
+  contentJson String?      @db.Text
+  createdAt   DateTime     @default(now())
+
+  workspaceId   String
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  generatedById String?
+  generatedBy   User?     @relation(fields: [generatedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([workspaceId, status])
 }
