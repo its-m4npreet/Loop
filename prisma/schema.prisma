@@ -14,16 +14,18 @@ datasource db {
 
 enum Role {
   ADMIN
-  USER
+  ANALYST
+  VIEWER
 }
 
 model Workspace {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  users User[]
+  users       User[]
+  invitations Invitation[]
 }
 
 model User {
@@ -33,7 +35,7 @@ model User {
   emailVerified DateTime?
   image         String?
   passwordHash  String?
-  role          Role      @default(USER)
+  role          Role      @default(VIEWER)
   workspaceId   String?
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
@@ -42,6 +44,8 @@ model User {
   accounts  Account[]
   sessions  Session[]
   workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  invitedUsers Invitation[] @relation("InvitedBy")
 }
 
 model Account {
@@ -77,4 +81,23 @@ model VerificationToken {
   expires    DateTime
 
   @@id([identifier, token])
+}
+
+model Invitation {
+  id          String   @id @default(cuid())
+  email       String
+  name        String?
+  role        Role     @default(VIEWER)
+  token       String   @unique
+  workspaceId String
+  invitedById String
+  acceptedAt  DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy    User      @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
 }

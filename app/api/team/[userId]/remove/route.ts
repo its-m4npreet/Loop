@@ -37,7 +37,7 @@ export async function DELETE(
 
   await prisma.user.update({
     where: { id: userId },
-    data: { workspaceId: null, role: "USER" },
+    data: { workspaceId: null, role: "VIEWER" },
   })
 
   return NextResponse.json({ success: true })
