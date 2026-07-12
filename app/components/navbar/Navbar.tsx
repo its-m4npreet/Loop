@@ -85,7 +85,7 @@ function Navbar({ collapsed, onToggleMobile, userName, userEmail, userImage }: N
         <Menu size={20} />
       </button>
 
-      <div className="navbar-search">
+      {/* <div className="navbar-search">
         <Search className="navbar-search-icon" size={16} />
         <input
           type="text"
@@ -95,7 +95,7 @@ function Navbar({ collapsed, onToggleMobile, userName, userEmail, userImage }: N
           aria-label="Global search"
           id="navbar-search-input"
         />
-      </div>
+      </div> */}
 
       <div className="navbar-actions">
         <div className="navbar-notification-wrapper" ref={notifRef}>
@@ -145,10 +145,10 @@ function Navbar({ collapsed, onToggleMobile, userName, userEmail, userImage }: N
           </div>
         </div>
 
-        <button className="navbar-report-btn" id="navbar-report-btn">
+        <Link href="/reports/generate" className="navbar-report-btn" id="navbar-report-btn">
           <FileBarChart size={16} />
           <span>Generate Report</span>
-        </button>
+        </Link>
 
         <div className="navbar-profile-wrapper" ref={profileRef}>
           <div

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Plus, Download } from 'lucide-react'
+import Link from 'next/link'
 
 import './page.css'
 
@@ -30,30 +31,30 @@ export default async function ReportsPage() {
         <p className="page-subtitle">Generate and manage AI-powered reports from your data.</p>
       </div>
       <div className="page-header-actions">
-        <button className="btn-primary" id="new-report-btn">
+        <Link href="/reports/generate" className="btn-primary" id="new-report-btn">
           <Plus size={15} />
           New Report
-        </button>
+        </Link>
       </div>
     </div>
 
-    <div className="reports-templates">
-      <div className="section-title">Templates</div>
-      <div className="reports-grid">
-        {[
-          { title: 'Weekly Summary', desc: 'Overview of the past week\'s feedback and sentiment.', icon: '📊' },
-          { title: 'Sentiment Report', desc: 'Deep analysis of sentiment trends over a period.', icon: '😊' },
-          { title: 'Theme Analysis', desc: 'Breakdown of trending themes and their impact.', icon: '🏷️' },
-          { title: 'Executive Summary', desc: 'High-level overview for stakeholders.', icon: '📋' },
-        ].map((t, i) => (
-          <button key={i} className="reports-template-card" id={`template-${i}`}>
-            <div className="reports-template-icon">{t.icon}</div>
-            <div className="reports-template-title">{t.title}</div>
-            <div className="reports-template-desc">{t.desc}</div>
-          </button>
-        ))}
+      <div className="reports-templates">
+        <div className="section-title">Templates</div>
+        <div className="reports-grid">
+          {[
+            { title: 'Weekly Summary', desc: 'Overview of the past week\'s feedback and sentiment.', icon: '📊', type: 'weekly-summary' },
+            { title: 'Sentiment Report', desc: 'Deep analysis of sentiment trends over a period.', icon: '😊', type: 'sentiment' },
+            { title: 'Theme Analysis', desc: 'Breakdown of trending themes and their impact.', icon: '🏷️', type: 'theme-analysis' },
+            { title: 'Executive Summary', desc: 'High-level overview for stakeholders.', icon: '📋', type: 'executive' },
+          ].map((t, i) => (
+            <Link key={i} href={`/reports/generate?type=${t.type}`} className="reports-template-card" id={`template-${i}`}>
+              <div className="reports-template-icon">{t.icon}</div>
+              <div className="reports-template-title">{t.title}</div>
+              <div className="reports-template-desc">{t.desc}</div>
+            </Link>
+          ))}
+        </div>
       </div>
-    </div>
 
     <div className="section-title" style={{ marginTop: 40 }}>Recent Reports</div>
     <div className="reports-list">

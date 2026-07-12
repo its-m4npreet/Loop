@@ -112,7 +112,7 @@ export default async function WorkspacePage() {
                   </div>
                 </div>
                 <div className="settings-item-right">
-                  <span className={`team-member-status ${m.role === 'ADMIN' ? 'active' : ''}`}>
+                  <span className="settings-item-value">
                     {m.role === 'ADMIN' ? 'Admin' : m.role === 'ANALYST' ? 'Analyst' : 'Viewer'}
                   </span>
                 </div>

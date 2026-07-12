@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Mail, MoreHorizontal, Plus, Search, UserX, Trash2, ChevronDown, X, Clock, Copy, CheckCircle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
+import { Mail, MoreHorizontal, Plus, Search, UserX, Trash2, ChevronDown, X, Clock, Copy, CheckCircle, ArrowUpCircle, ArrowDownCircle, Users, CircleCheck, SlidersHorizontal } from 'lucide-react'
 import Avatar from '@/app/components/Avatar'
 
 interface TeamMember {
@@ -59,24 +59,24 @@ export default function TeamManager({ isAdmin, initialMembers, initialInvitation
   const [confirmAction, setConfirmAction] = useState<{ type: string; memberId: string; memberName: string } | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'active' | 'pending'>('all')
+  const [showFilterMenu, setShowFilterMenu] = useState(false)
 
   const activeCount = members.filter(m => m.isActive).length
-  const roleCount = new Set(members.map(m => m.role)).size
 
   const filtered = members.filter(m => {
     const q = search.toLowerCase()
-    return (
-      m.name?.toLowerCase().includes(q) ||
-      m.email.toLowerCase().includes(q)
-    )
+    const matchesSearch = m.name?.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
+    if (filter === 'active') return matchesSearch && m.isActive
+    if (filter === 'pending') return false
+    return matchesSearch
   })
 
   const filteredInvitations = invitations.filter(i => {
     const q = search.toLowerCase()
-    return (
-      i.email.toLowerCase().includes(q) ||
-      i.name?.toLowerCase().includes(q)
-    )
+    const matchesSearch = i.email.toLowerCase().includes(q) || i.name?.toLowerCase().includes(q)
+    if (filter === 'active') return false
+    return matchesSearch
   })
 
   const fetchMembers = useCallback(async () => {
@@ -92,6 +92,9 @@ export default function TeamManager({ isAdmin, initialMembers, initialInvitation
       const target = e.target as HTMLElement
       if (!target.closest('.team-member-more') && !target.closest('.team-dropdown')) {
         setOpenMenuId(null)
+      }
+      if (!target.closest('.team-filter-dropdown')) {
+        setShowFilterMenu(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -219,43 +222,73 @@ export default function TeamManager({ isAdmin, initialMembers, initialInvitation
           {isAdmin && (
             <button className="btn-primary" onClick={() => setShowInvite(true)}>
               <Plus size={15} />
-              Invite Member
+              <span>Invite Member</span>
             </button>
           )}
         </div>
       </div>
 
-      <div className="team-stats-grid">
-        <div className="team-stat-card">
-          <div className="team-stat-value">{members.length}</div>
-          <div className="team-stat-label">Total Members</div>
+      <div className="team-toolbar">
+        <div className="team-search-bar">
+          <Search size={15} />
+          <input
+            type="text"
+            placeholder="Search members..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className="team-search-clear" onClick={() => setSearch('')}>
+              <X size={14} />
+            </button>
+          )}
         </div>
-        <div className="team-stat-card">
-          <div className="team-stat-value">{activeCount}</div>
-          <div className="team-stat-label">Active</div>
-        </div>
-        <div className="team-stat-card">
-          <div className="team-stat-value">{invitations.length}</div>
-          <div className="team-stat-label">Pending Invites</div>
-        </div>
-      </div>
-
-      <div className="team-search-bar">
-        <Search size={15} />
-        <input
-          type="text"
-          placeholder="Search members by name or email..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        {search && (
-          <button className="team-search-clear" onClick={() => setSearch('')}>
-            <X size={14} />
+        <div className="team-filters-desktop">
+          <button className={`team-filter-pill ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
+            <Users size={15} />
+            <span>All</span>
+            <span className="team-filter-count">{members.length + invitations.length}</span>
           </button>
-        )}
+          <button className={`team-filter-pill ${filter === 'active' ? 'active' : ''}`} onClick={() => setFilter('active')}>
+            <CircleCheck size={15} />
+            <span>Active</span>
+            <span className="team-filter-count">{activeCount}</span>
+          </button>
+          <button className={`team-filter-pill ${filter === 'pending' ? 'active' : ''}`} onClick={() => setFilter('pending')}>
+            <Clock size={15} />
+            <span>Pending</span>
+            <span className="team-filter-count">{invitations.length}</span>
+          </button>
+        </div>
+        <div className="team-filter-dropdown">
+          <button className="team-filter-dropdown-btn" onClick={() => setShowFilterMenu(!showFilterMenu)}>
+            <SlidersHorizontal size={15} />
+            <span>{filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'Pending'}</span>
+            <ChevronDown size={13} />
+          </button>
+          {showFilterMenu && (
+            <div className="team-filter-dropdown-menu">
+              <button className={`team-filter-dropdown-item ${filter === 'all' ? 'active' : ''}`} onClick={() => { setFilter('all'); setShowFilterMenu(false) }}>
+                <Users size={14} />
+                All
+                <span className="team-filter-dropdown-count">{members.length + invitations.length}</span>
+              </button>
+              <button className={`team-filter-dropdown-item ${filter === 'active' ? 'active' : ''}`} onClick={() => { setFilter('active'); setShowFilterMenu(false) }}>
+                <CircleCheck size={14} />
+                Active
+                <span className="team-filter-dropdown-count">{activeCount}</span>
+              </button>
+              <button className={`team-filter-dropdown-item ${filter === 'pending' ? 'active' : ''}`} onClick={() => { setFilter('pending'); setShowFilterMenu(false) }}>
+                <Clock size={14} />
+                Pending
+                <span className="team-filter-dropdown-count">{invitations.length}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {invitations.length > 0 && (
+      {filter !== 'active' && invitations.length > 0 && (
         <>
           <h3 className="team-section-title">Pending Invitations</h3>
           <div className="team-list" style={{ marginBottom: 'var(--space-6)' }}>
@@ -270,16 +303,16 @@ export default function TeamManager({ isAdmin, initialMembers, initialInvitation
                   </div>
                   <div>
                     <div className="team-member-name">
-                      {i.name || i.email.split('@')[0]}
+                      <span className="team-member-name-text">{i.name || i.email.split('@')[0]}</span>
                       <span className="team-invite-badge">Invited</span>
                     </div>
                     <div className="team-member-email">
                       <Mail size={11} />
-                      {i.email}
+                      <span>{i.email}</span>
                     </div>
                     <div className="team-invite-meta">
                       <Clock size={11} />
-                      Invited {new Date(i.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} &middot; Expires {new Date(i.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      <span>Invited {new Date(i.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} &middot; Expires {new Date(i.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     </div>
                   </div>
                 </div>
@@ -339,12 +372,12 @@ export default function TeamManager({ isAdmin, initialMembers, initialInvitation
               <Avatar name={m.name} src={m.image} size="md" />
               <div>
                 <div className="team-member-name">
-                  {m.name || 'User'}
+                  <span className="team-member-name-text">{m.name || 'User'}</span>
                   {m.id === initialMembers[0]?.id && <span className="team-you-badge">You</span>}
                 </div>
                 <div className="team-member-email">
                   <Mail size={11} />
-                  {m.email}
+                  <span>{m.email}</span>
                 </div>
               </div>
             </div>

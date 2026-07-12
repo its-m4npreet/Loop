@@ -50,6 +50,11 @@
   gap: var(--space-3);
 }
 
+.workspace-role {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
 /* ── Create Workspace Form ── */
 .workspace-create-wrapper {
   display: flex;
