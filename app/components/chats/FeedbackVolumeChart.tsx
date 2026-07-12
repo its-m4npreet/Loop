@@ -11,8 +11,12 @@ import {
   AreaChart,
   type TooltipProps,
 } from 'recharts';
-import { feedbackVolumeData } from '../../data/dashboardData';
+import { feedbackVolumeData as defaultData } from '../../data/dashboardData';
 import './Charts.css';
+
+interface FeedbackVolumeChartProps {
+  data?: Array<{ date: string; count: number }>;
+}
 
 function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
   if (active && payload && payload.length) {
@@ -26,7 +30,8 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
   return null;
 }
 
-function FeedbackVolumeChart() {
+function FeedbackVolumeChart({ data }: FeedbackVolumeChartProps) {
+  const chartData = data ?? defaultData;
   return (
     <div className="chart-card">
       <div className="chart-card-header">
@@ -38,7 +43,7 @@ function FeedbackVolumeChart() {
       </div>
 
       <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={feedbackVolumeData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+        <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="feedbackGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%"  stopColor="#22C55E" stopOpacity={0.15} />

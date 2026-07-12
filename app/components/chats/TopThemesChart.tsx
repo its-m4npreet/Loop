@@ -12,8 +12,12 @@ import {
   Cell,
   type TooltipProps,
 } from 'recharts';
-import { topThemesChartData } from '../../data/dashboardData';
+import { topThemesChartData as defaultData } from '../../data/dashboardData';
 import './Charts.css';
+
+interface TopThemesChartProps {
+  data?: Array<{ theme: string; mentions: number }>;
+}
 
 const BAR_COLORS = ['#22C55E', '#16A34A', '#4ADE80', '#86EFAC', '#BBF7D0', '#DCFCE7'];
 
@@ -29,7 +33,8 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
   return null;
 }
 
-function TopThemesChart() {
+function TopThemesChart({ data }: TopThemesChartProps) {
+  const chartData = data ?? defaultData;
   return (
     <div className="chart-card">
       <div className="chart-card-header">
@@ -42,7 +47,7 @@ function TopThemesChart() {
       <ResponsiveContainer width="100%" height={220}>
         <BarChart
           layout="vertical"
-          data={topThemesChartData}
+          data={chartData}
           margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" horizontal={false} />
@@ -62,7 +67,7 @@ function TopThemesChart() {
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(34,197,94,0.06)' }} />
           <Bar dataKey="mentions" radius={[0, 6, 6, 0]} barSize={16}>
-            {topThemesChartData.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell key={entry.theme} fill={BAR_COLORS[index % BAR_COLORS.length]} />
             ))}
           </Bar>

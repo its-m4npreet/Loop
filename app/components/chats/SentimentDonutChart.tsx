@@ -9,8 +9,12 @@ import {
   ResponsiveContainer,
   type TooltipProps,
 } from 'recharts';
-import { sentimentDistributionData } from '../../data/dashboardData';
+import { sentimentDistributionData as defaultData } from '../../data/dashboardData';
 import './Charts.css';
+
+interface SentimentDonutChartProps {
+  data?: Array<{ name: string; value: number; color: string }>;
+}
 
 function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
   if (active && payload && payload.length) {
@@ -24,7 +28,8 @@ function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
   return null;
 }
 
-function SentimentDonutChart() {
+function SentimentDonutChart({ data }: SentimentDonutChartProps) {
+  const chartData = data ?? defaultData;
   return (
     <div className="chart-card">
       <div className="chart-card-header">
@@ -38,7 +43,7 @@ function SentimentDonutChart() {
         <ResponsiveContainer width={180} height={180}>
           <PieChart>
             <Pie
-              data={sentimentDistributionData}
+              data={chartData}
               cx="50%"
               cy="50%"
               innerRadius={52}
@@ -47,7 +52,7 @@ function SentimentDonutChart() {
               dataKey="value"
               strokeWidth={0}
             >
-              {sentimentDistributionData.map((entry) => (
+              {chartData.map((entry) => (
                 <Cell key={entry.name} fill={entry.color} />
               ))}
             </Pie>
@@ -56,7 +61,7 @@ function SentimentDonutChart() {
         </ResponsiveContainer>
 
         <div className="donut-legend">
-          {sentimentDistributionData.map((item) => (
+          {chartData.map((item) => (
             <div key={item.name} className="donut-legend-item">
               <span
                 className="donut-legend-dot"
