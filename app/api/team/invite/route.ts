@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   }
 
   const tempPassword = await hash("ChangeMe123!", 12)
-  const userRole = role === "ADMIN" ? "ADMIN" : "USER"
+  const userRole = role === "ADMIN" ? "ADMIN" : role === "ANALYST" ? "ANALYST" : "VIEWER"
 
   const newUser = await prisma.user.create({
     data: {

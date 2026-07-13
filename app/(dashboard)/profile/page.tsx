@@ -37,7 +37,7 @@ export default async function ProfilePage() {
   })
   if (!user) redirect("/api/auth")
 
-  const roleDisplay = user.role === 'ADMIN' ? 'Admin' : 'Member'
+  const roleDisplay = user.role === 'ADMIN' ? 'Admin' : user.role === 'ANALYST' ? 'Analyst' : 'Viewer'
 
   return (
     <>

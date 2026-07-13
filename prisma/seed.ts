@@ -214,7 +214,7 @@ async function main() {
       name: "Analyst User",
       email: "analyst@acme.test",
       passwordHash: analystHash,
-      role: "USER",
+      role: "ANALYST",
       workspaceId: workspace.id,
     },
   });
@@ -224,7 +224,7 @@ async function main() {
       name: "Viewer User",
       email: "viewer@acme.test",
       passwordHash: viewerHash,
-      role: "USER",
+      role: "VIEWER",
       workspaceId: workspace.id,
     },
   });

@@ -24,8 +24,8 @@ export async function PATCH(
   const body = await req.json()
   const { role } = body as { role?: string }
 
-  if (role !== "ADMIN" && role !== "USER") {
-    return NextResponse.json({ error: "Role must be ADMIN or USER" }, { status: 400 })
+  if (role !== "ADMIN" && role !== "ANALYST" && role !== "VIEWER") {
+    return NextResponse.json({ error: "Role must be ADMIN, ANALYST, or VIEWER" }, { status: 400 })
   }
 
   const targetUser = await prisma.user.findUnique({

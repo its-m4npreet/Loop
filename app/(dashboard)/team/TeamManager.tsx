@@ -25,7 +25,7 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
   const [showInvite, setShowInvite] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
-  const [inviteRole, setInviteRole] = useState('USER')
+  const [inviteRole, setInviteRole] = useState('VIEWER')
   const [inviteError, setInviteError] = useState('')
   const [inviteLoading, setInviteLoading] = useState(false)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
@@ -82,7 +82,7 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
       setShowInvite(false)
       setInviteEmail('')
       setInviteName('')
-      setInviteRole('USER')
+      setInviteRole('VIEWER')
     } catch {
       setInviteError('Network error')
     } finally {
@@ -225,7 +225,7 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
                     <div className="team-dropdown">
                       <button
                         className="team-dropdown-item"
-                        onClick={() => handleChangeRole(m.id, m.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                        onClick={() => handleChangeRole(m.id, m.role === 'ADMIN' ? 'VIEWER' : 'ADMIN')}
                         disabled={actionLoading}
                       >
                         <Shield size={14} />
@@ -293,7 +293,7 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
                 <label className="team-modal-label">
                   Role
                   <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
-                    <option value="USER">Member</option>
+                    <option value="VIEWER">Member</option>
                     <option value="ADMIN">Admin</option>
                   </select>
                 </label>

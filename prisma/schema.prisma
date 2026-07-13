@@ -14,7 +14,8 @@ datasource db {
 
 enum Role {
   ADMIN
-  USER
+  ANALYST
+  VIEWER
 }
 
 model Workspace {
@@ -23,10 +24,11 @@ model Workspace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users     User[]
-  feedbacks Feedback[]
-  themes    Theme[]
-  reports   Report[]
+  users       User[]
+  feedbacks   Feedback[]
+  themes      Theme[]
+  reports     Report[]
+  invitations Invitation[]
 }
 
 model User {
@@ -36,16 +38,17 @@ model User {
   emailVerified DateTime?
   image         String?
   passwordHash  String?
-  role          Role      @default(USER)
+  role          Role      @default(VIEWER)
   workspaceId   String?
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts  Account[]
-  sessions  Session[]
-  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  reports   Report[]
+  accounts     Account[]
+  sessions     Session[]
+  workspace    Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  reports      Report[]
+  invitedUsers Invitation[] @relation("InvitedBy")
 }
 
 model Account {
@@ -169,4 +172,25 @@ model Report {
 
   @@index([workspaceId])
   @@index([workspaceId, status])
+}
+
+// ── Invitation Model (from team/workspace feature) ──
+
+model Invitation {
+  id          String    @id @default(cuid())
+  email       String
+  name        String?
+  role        Role      @default(VIEWER)
+  token       String    @unique
+  workspaceId String
+  invitedById String
+  acceptedAt  DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy User      @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
 }
