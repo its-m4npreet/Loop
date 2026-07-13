@@ -474,6 +474,7 @@ export default function TeamManager({ isAdmin, initialMembers, initialInvitation
                 <label className="team-modal-label">
                   Role
                   <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
+
                     <option value="ADMIN">Admin</option>
                     <option value="ANALYST">Analyst</option>
                     <option value="VIEWER">Viewer</option>
