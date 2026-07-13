@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Mail, MoreHorizontal, Plus, Search, Shield, UserX, Trash2, ChevronDown, X } from 'lucide-react'
+import { Mail, MoreHorizontal, Plus, Search, UserX, Trash2, ChevronDown, X, Clock, Copy, CheckCircle, ArrowUpCircle, ArrowDownCircle, Users, CircleCheck, SlidersHorizontal } from 'lucide-react'
 import Avatar from '@/app/components/Avatar'
 
 interface TeamMember {
@@ -14,13 +14,40 @@ interface TeamMember {
   createdAt: string
 }
 
+interface PendingInvitation {
+  id: string
+  email: string
+  name: string | null
+  role: string
+  createdAt: string
+  expiresAt: string
+}
+
 interface TeamManagerProps {
   isAdmin: boolean
   initialMembers: TeamMember[]
+  initialInvitations: PendingInvitation[]
 }
 
-export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProps) {
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: 'Admin',
+  ANALYST: 'Analyst',
+  VIEWER: 'Viewer',
+}
+
+const ROLE_ORDER = ['VIEWER', 'ANALYST', 'ADMIN']
+
+function getRoleChangeOptions(currentRole: string) {
+  return ROLE_ORDER.filter(r => r !== currentRole).map(r => ({
+    value: r,
+    label: ROLE_LABELS[r],
+    direction: ROLE_ORDER.indexOf(r) > ROLE_ORDER.indexOf(currentRole) ? 'up' as const : 'down' as const,
+  }))
+}
+
+export default function TeamManager({ isAdmin, initialMembers, initialInvitations }: TeamManagerProps) {
   const [members, setMembers] = useState<TeamMember[]>(initialMembers)
+  const [invitations, setInvitations] = useState<PendingInvitation[]>(initialInvitations)
   const [search, setSearch] = useState('')
   const [showInvite, setShowInvite] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
@@ -31,16 +58,25 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [confirmAction, setConfirmAction] = useState<{ type: string; memberId: string; memberName: string } | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'active' | 'pending'>('all')
+  const [showFilterMenu, setShowFilterMenu] = useState(false)
 
   const activeCount = members.filter(m => m.isActive).length
-  const roleCount = new Set(members.map(m => m.role)).size
 
   const filtered = members.filter(m => {
     const q = search.toLowerCase()
-    return (
-      m.name?.toLowerCase().includes(q) ||
-      m.email.toLowerCase().includes(q)
-    )
+    const matchesSearch = m.name?.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
+    if (filter === 'active') return matchesSearch && m.isActive
+    if (filter === 'pending') return false
+    return matchesSearch
+  })
+
+  const filteredInvitations = invitations.filter(i => {
+    const q = search.toLowerCase()
+    const matchesSearch = i.email.toLowerCase().includes(q) || i.name?.toLowerCase().includes(q)
+    if (filter === 'active') return false
+    return matchesSearch
   })
 
   const fetchMembers = useCallback(async () => {
@@ -56,6 +92,9 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
       const target = e.target as HTMLElement
       if (!target.closest('.team-member-more') && !target.closest('.team-dropdown')) {
         setOpenMenuId(null)
+      }
+      if (!target.closest('.team-filter-dropdown')) {
+        setShowFilterMenu(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -75,10 +114,10 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
       })
       const data = await res.json()
       if (!res.ok) {
-        setInviteError(data.error || 'Failed to invite')
+        setInviteError(data.error || 'Failed to send invitation')
         return
       }
-      setMembers(prev => [...prev, data.member])
+      setInvitations(prev => [...prev, data.invitation])
       setShowInvite(false)
       setInviteEmail('')
       setInviteName('')
@@ -87,6 +126,40 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
       setInviteError('Network error')
     } finally {
       setInviteLoading(false)
+    }
+  }
+
+  async function handleCopyInviteLink(inviteId: string) {
+    const baseUrl = window.location.origin
+    const invitation = invitations.find(i => i.id === inviteId)
+    if (!invitation) return
+
+    try {
+      const res = await fetch(`/api/team/invite/${inviteId}/link`)
+      const data = await res.json()
+      if (data.url) {
+        await navigator.clipboard.writeText(data.url)
+        setCopiedId(inviteId)
+        setTimeout(() => setCopiedId(null), 2000)
+      }
+    } catch {
+      const url = `${baseUrl}/auth/invite?token=${inviteId}`
+      await navigator.clipboard.writeText(url)
+      setCopiedId(inviteId)
+      setTimeout(() => setCopiedId(null), 2000)
+    }
+  }
+
+  async function handleCancelInvitation(inviteId: string) {
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/team/invite/${inviteId}/cancel`, { method: 'DELETE' })
+      if (res.ok) {
+        setInvitations(prev => prev.filter(i => i.id !== inviteId))
+      }
+    } finally {
+      setActionLoading(false)
+      setOpenMenuId(null)
     }
   }
 
@@ -149,42 +222,144 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
           {isAdmin && (
             <button className="btn-primary" onClick={() => setShowInvite(true)}>
               <Plus size={15} />
-              Invite Member
+              <span>Invite Member</span>
             </button>
           )}
         </div>
       </div>
 
-      <div className="team-stats-grid">
-        <div className="team-stat-card">
-          <div className="team-stat-value">{members.length}</div>
-          <div className="team-stat-label">Total Members</div>
+      <div className="team-toolbar">
+        <div className="team-search-bar">
+          <Search size={15} />
+          <input
+            type="text"
+            placeholder="Search members..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className="team-search-clear" onClick={() => setSearch('')}>
+              <X size={14} />
+            </button>
+          )}
         </div>
-        <div className="team-stat-card">
-          <div className="team-stat-value">{activeCount}</div>
-          <div className="team-stat-label">Active</div>
-        </div>
-        <div className="team-stat-card">
-          <div className="team-stat-value">{roleCount}</div>
-          <div className="team-stat-label">Roles</div>
-        </div>
-      </div>
-
-      <div className="team-search-bar">
-        <Search size={15} />
-        <input
-          type="text"
-          placeholder="Search members by name or email..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        {search && (
-          <button className="team-search-clear" onClick={() => setSearch('')}>
-            <X size={14} />
+        <div className="team-filters-desktop">
+          <button className={`team-filter-pill ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
+            <Users size={15} />
+            <span>All</span>
+            <span className="team-filter-count">{members.length + invitations.length}</span>
           </button>
-        )}
+          <button className={`team-filter-pill ${filter === 'active' ? 'active' : ''}`} onClick={() => setFilter('active')}>
+            <CircleCheck size={15} />
+            <span>Active</span>
+            <span className="team-filter-count">{activeCount}</span>
+          </button>
+          <button className={`team-filter-pill ${filter === 'pending' ? 'active' : ''}`} onClick={() => setFilter('pending')}>
+            <Clock size={15} />
+            <span>Pending</span>
+            <span className="team-filter-count">{invitations.length}</span>
+          </button>
+        </div>
+        <div className="team-filter-dropdown">
+          <button className="team-filter-dropdown-btn" onClick={() => setShowFilterMenu(!showFilterMenu)}>
+            <SlidersHorizontal size={15} />
+            <span>{filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'Pending'}</span>
+            <ChevronDown size={13} />
+          </button>
+          {showFilterMenu && (
+            <div className="team-filter-dropdown-menu">
+              <button className={`team-filter-dropdown-item ${filter === 'all' ? 'active' : ''}`} onClick={() => { setFilter('all'); setShowFilterMenu(false) }}>
+                <Users size={14} />
+                All
+                <span className="team-filter-dropdown-count">{members.length + invitations.length}</span>
+              </button>
+              <button className={`team-filter-dropdown-item ${filter === 'active' ? 'active' : ''}`} onClick={() => { setFilter('active'); setShowFilterMenu(false) }}>
+                <CircleCheck size={14} />
+                Active
+                <span className="team-filter-dropdown-count">{activeCount}</span>
+              </button>
+              <button className={`team-filter-dropdown-item ${filter === 'pending' ? 'active' : ''}`} onClick={() => { setFilter('pending'); setShowFilterMenu(false) }}>
+                <Clock size={14} />
+                Pending
+                <span className="team-filter-dropdown-count">{invitations.length}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
+      {filter !== 'active' && invitations.length > 0 && (
+        <>
+          <h3 className="team-section-title">Pending Invitations</h3>
+          <div className="team-list" style={{ marginBottom: 'var(--space-6)' }}>
+            {filteredInvitations.length === 0 && search && (
+              <div className="team-empty">No invitations match your search.</div>
+            )}
+            {filteredInvitations.map(i => (
+              <div key={i.id} className="team-list-item team-list-item-invited">
+                <div className="team-member-info">
+                  <div className="team-invite-avatar">
+                    <Mail size={18} />
+                  </div>
+                  <div>
+                    <div className="team-member-name">
+                      <span className="team-member-name-text">{i.name || i.email.split('@')[0]}</span>
+                      <span className="team-invite-badge">Invited</span>
+                    </div>
+                    <div className="team-member-email">
+                      <Mail size={11} />
+                      <span>{i.email}</span>
+                    </div>
+                    <div className="team-invite-meta">
+                      <Clock size={11} />
+                      <span>Invited {new Date(i.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} &middot; Expires {new Date(i.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="team-member-right">
+                  <span className="team-member-role">{ROLE_LABELS[i.role] || i.role}</span>
+                  {isAdmin && (
+                    <div className="team-member-menu-wrap">
+                      <button
+                        className="team-member-more"
+                        onClick={() => setOpenMenuId(openMenuId === i.id ? null : i.id)}
+                        aria-label={`More options for ${i.email}`}
+                      >
+                        <MoreHorizontal size={18} />
+                        <ChevronDown size={12} />
+                      </button>
+                      {openMenuId === i.id && (
+                        <div className="team-dropdown">
+                          <button
+                            className="team-dropdown-item"
+                            onClick={() => {
+                              handleCopyInviteLink(i.id)
+                              setOpenMenuId(null)
+                            }}
+                          >
+                            {copiedId === i.id ? <CheckCircle size={14} /> : <Copy size={14} />}
+                            {copiedId === i.id ? 'Copied!' : 'Copy Invite Link'}
+                          </button>
+                          <button
+                            className="team-dropdown-item danger"
+                            onClick={() => handleCancelInvitation(i.id)}
+                            disabled={actionLoading}
+                          >
+                            <Trash2 size={14} />
+                            Cancel Invitation
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <h3 className="team-section-title">Members</h3>
       <div className="team-list">
         {filtered.length === 0 && (
           <div className="team-empty">
@@ -197,12 +372,12 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
               <Avatar name={m.name} src={m.image} size="md" />
               <div>
                 <div className="team-member-name">
-                  {m.name || 'User'}
+                  <span className="team-member-name-text">{m.name || 'User'}</span>
                   {m.id === initialMembers[0]?.id && <span className="team-you-badge">You</span>}
                 </div>
                 <div className="team-member-email">
                   <Mail size={11} />
-                  {m.email}
+                  <span>{m.email}</span>
                 </div>
               </div>
             </div>
@@ -210,7 +385,7 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
               <span className={`team-member-status ${m.isActive ? 'active' : 'inactive'}`}>
                 {m.isActive ? 'Active' : 'Inactive'}
               </span>
-              <span className="team-member-role">{m.role === 'ADMIN' ? 'Admin' : 'Member'}</span>
+              <span className="team-member-role">{ROLE_LABELS[m.role] || m.role}</span>
               {isAdmin && (
                 <div className="team-member-menu-wrap">
                   <button
@@ -223,14 +398,17 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
                   </button>
                   {openMenuId === m.id && (
                     <div className="team-dropdown">
-                      <button
-                        className="team-dropdown-item"
-                        onClick={() => handleChangeRole(m.id, m.role === 'ADMIN' ? 'VIEWER' : 'ADMIN')}
-                        disabled={actionLoading}
-                      >
-                        <Shield size={14} />
-                        {m.role === 'ADMIN' ? 'Demote to Member' : 'Promote to Admin'}
-                      </button>
+                      {getRoleChangeOptions(m.role).map(opt => (
+                        <button
+                          key={opt.value}
+                          className="team-dropdown-item"
+                          onClick={() => handleChangeRole(m.id, opt.value)}
+                          disabled={actionLoading}
+                        >
+                          {opt.direction === 'up' ? <ArrowUpCircle size={14} /> : <ArrowDownCircle size={14} />}
+                          {opt.direction === 'up' ? 'Promote' : 'Demote'} to {opt.label}
+                        </button>
+                      ))}
                       <button
                         className="team-dropdown-item"
                         onClick={() => handleToggleStatus(m.id, m.isActive)}
@@ -271,6 +449,9 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
             <form onSubmit={handleInvite}>
               <div className="team-modal-body">
                 {inviteError && <div className="team-modal-error">{inviteError}</div>}
+                <p className="team-modal-desc">
+                  An invitation email with a sign-up link will be sent to this address.
+                </p>
                 <label className="team-modal-label">
                   Email address
                   <input
@@ -293,8 +474,10 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
                 <label className="team-modal-label">
                   Role
                   <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
-                    <option value="VIEWER">Member</option>
+
                     <option value="ADMIN">Admin</option>
+                    <option value="ANALYST">Analyst</option>
+                    <option value="VIEWER">Viewer</option>
                   </select>
                 </label>
               </div>
@@ -303,7 +486,7 @@ export default function TeamManager({ isAdmin, initialMembers }: TeamManagerProp
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary" disabled={inviteLoading}>
-                  {inviteLoading ? 'Inviting...' : 'Invite Member'}
+                  {inviteLoading ? 'Sending...' : 'Send Invitation'}
                 </button>
               </div>
             </form>

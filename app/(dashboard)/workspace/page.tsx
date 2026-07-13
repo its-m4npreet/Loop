@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { FolderOpen } from 'lucide-react'
 import Avatar from '@/app/components/Avatar'
+import CreateWorkspaceForm from './CreateWorkspaceForm'
 
 import './page.css'
 
@@ -48,9 +49,10 @@ export default async function WorkspacePage() {
         <div className="page-header">
           <div>
             <h1 className="page-title">Workspace</h1>
-            <p className="page-subtitle">You are not part of a workspace yet.</p>
+            <p className="page-subtitle">Set up your workspace to get started.</p>
           </div>
         </div>
+        <CreateWorkspaceForm />
       </>
     )
   }
@@ -80,7 +82,7 @@ export default async function WorkspacePage() {
           <div className="settings-card">
             {[
               { label: 'Workspace name', value: workspace.name, desc: 'The name of your organization' },
-              { label: 'Workspace ID', value: workspace.id.slice(0, 8) + '…', desc: 'Unique identifier' },
+              { label: 'Workspace ID', value: workspace.id, desc: 'Unique identifier' },
               { label: 'Members', value: `${workspace.users.length}`, desc: 'Total team members' },
               { label: 'Created', value: formatDate(workspace.createdAt), desc: 'When this workspace was created' },
             ].map((item, i) => (
@@ -110,8 +112,8 @@ export default async function WorkspacePage() {
                   </div>
                 </div>
                 <div className="settings-item-right">
-                  <span className={`team-member-status ${m.role === 'ADMIN' ? 'active' : ''}`}>
-                    {m.role === 'ADMIN' ? 'Admin' : 'Member'}
+                  <span className="settings-item-value">
+                    {m.role === 'ADMIN' ? 'Admin' : m.role === 'ANALYST' ? 'Analyst' : 'Viewer'}
                   </span>
                 </div>
               </div>

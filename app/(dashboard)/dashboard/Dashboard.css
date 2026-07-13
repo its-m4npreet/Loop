@@ -96,9 +96,9 @@
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 350px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 2fr;
   }
 }
 
@@ -160,7 +160,7 @@
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 350px) {
   .themes-grid {
     grid-template-columns: 1fr;
   }
@@ -169,7 +169,8 @@
 /* ── Layout shell ── */
 .dashboard-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .dashboard-main {
@@ -178,6 +179,9 @@
   flex-direction: column;
   margin-left: var(--sidebar-width);
   transition: margin-left var(--transition-normal);
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .dashboard-layout:has(.sidebar.collapsed) .dashboard-main {
@@ -242,7 +246,7 @@
 /* ── Page Header (shared across all dashboard pages) ── */
 .page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-6);
   flex-wrap: wrap;
@@ -273,9 +277,9 @@
 }
 
 @media (max-width: 640px) {
-  .page-header {
+  /* .page-header {
     flex-direction: column;
-  }
+  } */
   .page-title {
     font-size: 18px;
   }

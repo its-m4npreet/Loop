@@ -1,7 +1,9 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
-import { hash } from "bcryptjs"
+import crypto from "crypto"
+import { sendInviteEmail } from "@/lib/mail"
+import { Role, ALL_ROLES } from "@/lib/permissions"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -11,7 +13,7 @@ export async function POST(req: Request) {
 
   const currentUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true, workspaceId: true },
+    select: { role: true, workspaceId: true, name: true },
   })
 
   if (!currentUser || currentUser.role !== "ADMIN") {
@@ -34,33 +36,65 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
   }
 
-  const existing = await prisma.user.findUnique({
+  const existingUser = await prisma.user.findUnique({
     where: { email: trimmedEmail },
   })
-  if (existing) {
+  if (existingUser) {
     return NextResponse.json({ error: "A user with this email already exists" }, { status: 409 })
   }
 
-  const tempPassword = await hash("ChangeMe123!", 12)
-  const userRole = role === "ADMIN" ? "ADMIN" : role === "ANALYST" ? "ANALYST" : "VIEWER"
+  const existingInvite = await prisma.invitation.findFirst({
+    where: {
+      email: trimmedEmail,
+      workspaceId: currentUser.workspaceId,
+      acceptedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+  })
+  if (existingInvite) {
+    return NextResponse.json({ error: "An active invitation already exists for this email" }, { status: 409 })
+  }
 
-  const newUser = await prisma.user.create({
+  const assignedRole: Role = ALL_ROLES.includes(role as Role) ? (role as Role) : "VIEWER"
+
+  const token = crypto.randomBytes(32).toString("hex")
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 7)
+
+  const invitation = await prisma.invitation.create({
     data: {
       email: trimmedEmail,
-      name: name?.trim() || trimmedEmail.split("@")[0],
-      passwordHash: tempPassword,
-      role: userRole,
+      name: name?.trim() || null,
+      role: assignedRole,
+      token,
       workspaceId: currentUser.workspaceId,
+      invitedById: session.user.id,
+      expiresAt,
     },
     select: {
       id: true,
-      name: true,
       email: true,
+      name: true,
       role: true,
-      isActive: true,
+      expiresAt: true,
       createdAt: true,
     },
   })
 
-  return NextResponse.json({ member: newUser })
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  const inviteUrl = `${baseUrl}/auth/invite?token=${token}`
+
+  try {
+    await sendInviteEmail({
+      to: trimmedEmail,
+      name: name?.trim() || trimmedEmail.split("@")[0],
+      role: assignedRole,
+      inviteUrl,
+      invitedByName: currentUser.name || "Someone",
+    })
+  } catch (err) {
+    console.error("Failed to send invitation email:", err)
+  }
+
+  return NextResponse.json({ invitation })
 }

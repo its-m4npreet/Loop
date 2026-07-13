@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Upload, FileBarChart } from 'lucide-react'
+import Link from 'next/link'
 
 import StatCard, { type Stat } from '../../components/cards/StatCard'
 import ThemeCard, { type Theme } from '../../components/cards/ThemeCard'
@@ -45,10 +46,10 @@ export default async function DashboardPage() {
           <Upload size={15} />
           Upload CSV
         </button>
-        <button className="btn-primary" id="generate-report-btn">
+        <Link href="/reports/generate" className="btn-primary" id="generate-report-btn">
           <FileBarChart size={15} />
           Generate Report
-        </button>
+        </Link>
       </div>
     </div>
 

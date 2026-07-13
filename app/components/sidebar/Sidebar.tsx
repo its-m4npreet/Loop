@@ -141,7 +141,7 @@ function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: Sid
               onClick={onCloseMobile}
             >
               <FolderOpen className="nav-icon" size={16} />
-              <span className="nav-label">No workspace</span>
+              <span className="nav-label">workspace</span>
             </Link>
           )}
         </nav>

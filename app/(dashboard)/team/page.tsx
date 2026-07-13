@@ -28,29 +28,54 @@ export default async function TeamPage() {
     )
   }
 
-  const members = await prisma.user.findMany({
-    where: { workspaceId: user.workspaceId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      image: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "asc" },
-  })
+  const [members, invitations] = await Promise.all([
+    prisma.user.findMany({
+      where: { workspaceId: user.workspaceId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.invitation.findMany({
+      where: {
+        workspaceId: user.workspaceId,
+        acceptedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        expiresAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ])
 
-  const serialized = members.map(m => ({
+  const serializedMembers = members.map(m => ({
     ...m,
     createdAt: m.createdAt.toISOString(),
+  }))
+
+  const serializedInvitations = invitations.map(i => ({
+    ...i,
+    createdAt: i.createdAt.toISOString(),
+    expiresAt: i.expiresAt.toISOString(),
   }))
 
   return (
     <TeamManager
       isAdmin={user.role === "ADMIN"}
-      initialMembers={serialized}
+      initialMembers={serializedMembers}
+      initialInvitations={serializedInvitations}
     />
   )
 }

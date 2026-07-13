@@ -11,7 +11,7 @@ function createPrisma() {
 // In dev, the global cache may hold a stale client from before schema changes.
 // Invalidate it if it's missing models that the current schema defines.
 if (process.env.NODE_ENV !== "production" && globalForPrisma.prisma) {
-  if (!("workspace" in globalForPrisma.prisma)) {
+  if (!("workspace" in globalForPrisma.prisma) || !("invitation" in globalForPrisma.prisma)) {
     globalForPrisma.prisma = undefined
   }
 }
