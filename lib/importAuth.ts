@@ -1,13 +1,11 @@
-import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { hasPermission, type Role } from "@/lib/permissions"
+import { hasPermission } from "@/lib/permissions"
 import { NextResponse } from "next/server"
+import {
+  requireWorkspaceUser,
+  type WorkspaceUser,
+} from "@/lib/workspaceAuth"
 
-export type ImportUser = {
-  id: string
-  role: Role
-  workspaceId: string
-}
+export type ImportUser = WorkspaceUser
 
 /**
  * Resolve authenticated importer with workspace + permission checks.
@@ -16,29 +14,25 @@ export type ImportUser = {
 export async function requireImportUser(): Promise<
   { user: ImportUser } | { error: NextResponse }
 > {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return {
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+  const result = await requireWorkspaceUser()
+  if ("error" in result) {
+    // Keep import-specific message when the user has no workspace
+    if (result.error.status === 400) {
+      return {
+        error: NextResponse.json(
+          { error: "You must belong to a workspace to import feedback." },
+          { status: 400 }
+        ),
+      }
     }
+    return result
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true, role: true, workspaceId: true },
-  })
-
-  if (!user?.workspaceId) {
-    return {
-      error: NextResponse.json(
-        { error: "You must belong to a workspace to import feedback." },
-        { status: 400 }
-      ),
-    }
-  }
-
-  const role = user.role as Role
-  if (!hasPermission(role, "feedback:import") && !hasPermission(role, "feedback:manual")) {
+  const { user } = result
+  if (
+    !hasPermission(user.role, "feedback:import") &&
+    !hasPermission(user.role, "feedback:manual")
+  ) {
     return {
       error: NextResponse.json(
         { error: "You do not have permission to import feedback." },
@@ -47,11 +41,5 @@ export async function requireImportUser(): Promise<
     }
   }
 
-  return {
-    user: {
-      id: user.id,
-      role,
-      workspaceId: user.workspaceId,
-    },
-  }
+  return { user }
 }

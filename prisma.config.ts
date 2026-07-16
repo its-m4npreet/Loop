@@ -3,6 +3,11 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+// Neon: use the direct (unpooled) URL for migrations/DDL.
+// Keep DATABASE_URL as the pooled connection for the app runtime.
+const databaseUrl =
+  process.env["DATABASE_URL_UNPOOLED"] ?? process.env["DATABASE_URL"];
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -10,6 +15,6 @@ export default defineConfig({
     seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: databaseUrl,
   },
 });
