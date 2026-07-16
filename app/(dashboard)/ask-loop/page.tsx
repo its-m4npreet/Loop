@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Zap, Sparkles, TrendingUp, AlertTriangle, Lightbulb } from 'lucide-react'
 
-import AIInsightsPanel from '../../components/insights/AIInsightsPanel'
 import './page.css'
 
 export default async function AskLoopPage() {

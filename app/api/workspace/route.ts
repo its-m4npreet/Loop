@@ -15,6 +15,31 @@ function generateWorkspaceId(companyName: string): string {
   return `ws-${slug}-${suffix}`
 }
 
+/** List the current user's workspace(s) for the sidebar. */
+export async function GET() {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      workspaceId: true,
+      workspace: { select: { id: true, name: true } },
+    },
+  })
+
+  if (!user?.workspace) {
+    return NextResponse.json({ workspaces: [], activeId: null })
+  }
+
+  return NextResponse.json({
+    workspaces: [{ id: user.workspace.id, name: user.workspace.name }],
+    activeId: user.workspaceId,
+  })
+}
+
 export async function POST(req: Request) {
   const session = await auth()
   if (!session?.user?.id) {

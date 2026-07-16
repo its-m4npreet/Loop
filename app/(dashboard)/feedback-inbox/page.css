@@ -1,2 +1,107 @@
 /* Feedback Inbox page styles */
 @import '../dashboard/Dashboard.css';
+
+.feedback-inbox-page {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.feedback-inbox-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
+  min-width: 0;
+}
+
+/* Title + Import always on the same row */
+.feedback-inbox-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.feedback-inbox-title-row .page-title {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.feedback-inbox-subtitle {
+  max-width: 560px;
+  margin: 0;
+}
+
+.feedback-import-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.feedback-import-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.feedback-import-label {
+  display: inline;
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .feedback-inbox-header {
+    margin-bottom: var(--space-4);
+  }
+
+  .feedback-inbox-subtitle {
+    display: none;
+  }
+
+  .feedback-inbox-title-row {
+    gap: var(--space-2);
+  }
+
+  /* Icon-only import next to title */
+  .feedback-import-btn {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .feedback-import-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .feedback-import-label {
+    display: none;
+  }
+}
+
+/* ── Small mobile (<400px) ── */
+@media (max-width: 400px) {
+  .feedback-inbox-title-row {
+    gap: 8px;
+  }
+
+  .feedback-import-btn {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+  }
+
+  .feedback-import-icon {
+    width: 18px;
+    height: 18px;
+  }
+}

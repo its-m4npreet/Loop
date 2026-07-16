@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Search,
   Plus,
@@ -161,6 +162,8 @@ function parseResilientReportContent(raw: RawReportContent | null | undefined): 
 }
 
 export default function ReportsListClient({ initialData }: ReportsListClientProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [reports, setReports] = useState<ReportListItem[]>(initialData.reports);
   const [page, setPage] = useState(initialData.page);
   const [totalPages, setTotalPages] = useState(initialData.totalPages);
@@ -298,29 +301,56 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
     }
   };
 
-  const handleViewReport = async (reportId: string, title: string) => {
-    setSelectedReportTitle(title);
+  const handleViewReport = useCallback(async (reportId: string, title?: string) => {
     setSelectedReportId(reportId);
+    if (title) setSelectedReportTitle(title);
     try {
       const res = await fetch(`/api/reports/${reportId}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.contentJson) {
-          setSelectedReportContent(parseResilientReportContent(JSON.parse(data.contentJson)));
-          setEditTitle(data.title);
-          setEditStartDate(data.periodStart ? data.periodStart.slice(0, 10) : '');
-          setEditEndDate(data.periodEnd ? data.periodEnd.slice(0, 10) : '');
-          setIsDetailsOpen(true);
-        } else {
-          alert("This report does not have detailed content available.");
-        }
-      } else {
-        alert("Failed to load report content.");
+      if (!res.ok) {
+        alert('Failed to load report content.');
+        return;
       }
+
+      const data = await res.json();
+      setSelectedReportTitle(data.title || title || 'Report');
+      setEditTitle(data.title || '');
+      setEditStartDate(data.periodStart ? data.periodStart.slice(0, 10) : '');
+      setEditEndDate(data.periodEnd ? data.periodEnd.slice(0, 10) : '');
+
+      if (!data.contentJson) {
+        alert('This report does not have detailed content available.');
+        return;
+      }
+
+      let parsed: RawReportContent | null = null;
+      try {
+        parsed =
+          typeof data.contentJson === 'string'
+            ? (JSON.parse(data.contentJson) as RawReportContent)
+            : (data.contentJson as RawReportContent);
+      } catch (parseErr) {
+        console.error('Failed to parse report contentJson', parseErr);
+        alert('Report content is corrupted and could not be displayed.');
+        return;
+      }
+
+      setSelectedReportContent(parseResilientReportContent(parsed));
+      setIsDetailsOpen(true);
     } catch (e) {
       console.error(e);
+      alert('Failed to load report content.');
     }
-  };
+  }, []);
+
+  // Open a specific report when arriving from generate page (?view=reportId)
+  useEffect(() => {
+    const viewId = searchParams.get('view');
+    if (!viewId) return;
+
+    void handleViewReport(viewId);
+    // Clear query so refresh/back doesn't re-open forever
+    router.replace('/reports', { scroll: false });
+  }, [searchParams, handleViewReport, router]);
 
   const handleUpdateReport = async () => {
     if (!selectedReportId) return;
@@ -401,41 +431,27 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
         <div className="section-title">Templates</div>
         <div className="reports-grid">
           {TEMPLATES.map((t, i) => (
-            <div
+            <button
               key={i}
+              type="button"
               className="reports-template-card"
               id={`template-${i}`}
               onClick={() => handleSelectTemplate(t.title)}
-              style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}
             >
-              <div>
-                <div className="reports-template-icon" style={{ color: t.color, marginBottom: '8px' }}>
+              <div className="reports-template-card-body">
+                <div className="reports-template-icon" style={{ color: t.color }}>
                   <t.icon size={24} />
                 </div>
                 <div className="reports-template-title">{t.title}</div>
-                <div className="reports-template-desc" style={{ marginTop: '4px' }}>{t.desc}</div>
+                <div className="reports-template-desc">{t.desc}</div>
               </div>
-              <div style={{ marginTop: '12px' }}>
-                <span style={{
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text-muted)',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  letterSpacing: '0.5px'
-                }}>
-                  {t.audience}
-                </span>
-              </div>
-            </div>
+              <span className="reports-template-audience">{t.audience}</span>
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="section-title" style={{ marginTop: 40, marginBottom: 16 }}>Recent Reports</div>
+      <div className="section-title reports-section-title">Recent Reports</div>
 
       <div className="reports-actions-row">
         <div className="search-bar-wrapper">
@@ -448,9 +464,15 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
             onChange={handleSearchChange}
           />
         </div>
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+        <button
+          type="button"
+          className="btn-primary reports-new-btn"
+          onClick={() => setIsModalOpen(true)}
+          aria-label="New Report"
+          title="New Report"
+        >
           <Plus size={15} />
-          New Report
+          <span className="reports-new-btn-label">New Report</span>
         </button>
       </div>
 
@@ -493,17 +515,26 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
 
             return (
               <div key={r.id} className="reports-list-item" id={`report-${r.id}`}>
-                <div 
-                  className="reports-info-clickable" 
+                <div
+                  className="reports-info-clickable"
                   onClick={() => r.status === 'COMPLETED' && handleViewReport(r.id, r.title)}
                   style={{ cursor: r.status === 'COMPLETED' ? 'pointer' : 'default' }}
                 >
                   <div className="reports-list-title">
-                    {r.title}
-                    {r.status === 'COMPLETED' && <Sparkles size={14} className="sparkle-ai-badge" />}
+                    <span className="reports-list-title-text">{r.title}</span>
+                    {r.status === 'COMPLETED' && (
+                      <Sparkles size={14} className="sparkle-ai-badge" />
+                    )}
                   </div>
                   <div className="reports-list-meta">
-                    {r.type.toUpperCase()} · Period: {periodText} · Generated {formattedDate} by {r.generatedByName}
+                    {r.type.toUpperCase()} · Period: {periodText} · Generated{' '}
+                    {formattedDate} by {r.generatedByName}
+                  </div>
+                  <div className="reports-list-meta-parts">
+                    <span>{r.type.toUpperCase()}</span>
+                    <span>Period: {periodText}</span>
+                    <span>{formattedDate}</span>
+                    <span>by {r.generatedByName}</span>
                   </div>
                 </div>
                 <div className="reports-list-actions">
@@ -519,7 +550,11 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
                       <FileText size={16} />
                     </button>
                   ) : (
-                    <button className="reports-download-btn disabled" disabled title="No action available">
+                    <button
+                      className="reports-download-btn disabled"
+                      disabled
+                      title="No action available"
+                    >
                       <Download size={16} />
                     </button>
                   )}
@@ -595,9 +630,7 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
                     id="report-status"
                     value={reportStatus}
                     onChange={(e) => setReportStatus(e.target.value as ReportStatus)}
-                    className="reports-search-input"
                     disabled={isGenerating}
-                    style={{ background: 'var(--color-bg)' }}
                   >
                     <option value="COMPLETED">Run AI Analysis Now (Completed)</option>
                     <option value="DRAFT">Save Configuration Only (Draft)</option>
@@ -686,53 +719,52 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
                 <h4>Executive Summary</h4>
                 <p className="summary-text">{selectedReportContent.executiveSummary}</p>
                 {selectedReportContent.executiveSummary.includes("pending") && (
-                  <div className="ai-notice-box" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '12px', background: 'var(--color-surface)', width: '100%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className="ai-notice-box report-config-editor">
+                    <div className="report-config-editor-head">
                       <Sparkles size={16} className="text-accent" />
-                      <span style={{ fontWeight: 600, fontSize: '13px' }}>Edit Report Configuration</span>
+                      <span>Edit Report Configuration</span>
                     </div>
 
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '4px', display: 'block' }}>Report Title</label>
+                    <div className="form-group">
+                      <label htmlFor="edit-report-title">Report Title</label>
                       <input
+                        id="edit-report-title"
                         type="text"
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
                         className="reports-search-input"
-                        style={{ height: '34px', fontSize: '12px', background: 'var(--color-bg)' }}
                       />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <div className="form-group" style={{ margin: 0, flex: 1 }}>
-                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '4px', display: 'block' }}>Start Date</label>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label htmlFor="edit-start-date">Start Date</label>
                         <input
+                          id="edit-start-date"
                           type="date"
                           value={editStartDate}
                           onChange={(e) => setEditStartDate(e.target.value)}
                           className="reports-search-input"
-                          style={{ height: '34px', fontSize: '12px', background: 'var(--color-bg)' }}
                         />
                       </div>
-                      <div className="form-group" style={{ margin: 0, flex: 1 }}>
-                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '4px', display: 'block' }}>End Date</label>
+                      <div className="form-group">
+                        <label htmlFor="edit-end-date">End Date</label>
                         <input
+                          id="edit-end-date"
                           type="date"
                           value={editEndDate}
                           onChange={(e) => setEditEndDate(e.target.value)}
                           className="reports-search-input"
-                          style={{ height: '34px', fontSize: '12px', background: 'var(--color-bg)' }}
                         />
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                    <div className="report-config-actions">
                       <button
                         type="button"
                         className="btn-secondary"
                         onClick={handleUpdateReport}
                         disabled={isUpdating || isCompiling}
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px', height: 'auto', margin: 0 }}
                       >
                         {isUpdating ? 'Saving...' : 'Save Configuration'}
                       </button>
@@ -741,7 +773,6 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
                         className="btn-primary"
                         onClick={handleCompileReport}
                         disabled={isUpdating || isCompiling}
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px', height: 'auto', margin: 0 }}
                       >
                         {isCompiling ? (
                           <>
@@ -829,17 +860,20 @@ export default function ReportsListClient({ initialData }: ReportsListClientProp
                 </div>
               </div>
             </div>
-            <div className="reports-modal-footer" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <div className="reports-modal-footer details-footer">
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 onClick={() => window.print()}
               >
                 <Printer size={14} />
                 Print PDF
               </button>
-              <button type="button" className="btn-secondary" onClick={() => setIsDetailsOpen(false)}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setIsDetailsOpen(false)}
+              >
                 Close
               </button>
             </div>

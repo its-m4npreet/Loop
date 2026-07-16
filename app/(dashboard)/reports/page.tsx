@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
@@ -35,55 +36,58 @@ export default async function ReportsPage() {
   ])
 
   return (
-    <>
-    <div className="page-header">
-      <div>
-        <h1 className="page-title">Reports</h1>
-        <p className="page-subtitle">Generate and manage AI-powered reports from your data.</p>
+    <div className="reports-page">
+      <div className="page-header reports-page-header">
+        <div className="reports-page-header-text">
+          <h1 className="page-title">Reports</h1>
+          <p className="page-subtitle">
+            Generate and manage AI-powered reports from your data.
+          </p>
+        </div>
       </div>
-    </div>
 
-    {/* Reports Stats Grid */}
-    <div className="reports-stats-grid mb-6">
-      <div className="reports-stat-card">
-        <div className="reports-stat-icon-wrapper blue">
-          <FileText size={20} />
+      <div className="reports-stats-grid">
+        <div className="reports-stat-card">
+          <div className="reports-stat-icon-wrapper blue">
+            <FileText size={20} />
+          </div>
+          <div className="reports-stat-content">
+            <span className="reports-stat-label">Total Reports</span>
+            <span className="reports-stat-value">{stats.total}</span>
+          </div>
         </div>
-        <div className="reports-stat-content">
-          <span className="reports-stat-label">Total Reports</span>
-          <span className="reports-stat-value">{stats.total}</span>
+        <div className="reports-stat-card">
+          <div className="reports-stat-icon-wrapper green">
+            <CheckCircle size={20} />
+          </div>
+          <div className="reports-stat-content">
+            <span className="reports-stat-label">Completed</span>
+            <span className="reports-stat-value">{stats.completed}</span>
+          </div>
+        </div>
+        <div className="reports-stat-card">
+          <div className="reports-stat-icon-wrapper orange">
+            <Clock size={20} />
+          </div>
+          <div className="reports-stat-content">
+            <span className="reports-stat-label">Drafts</span>
+            <span className="reports-stat-value">{stats.draft}</span>
+          </div>
+        </div>
+        <div className="reports-stat-card">
+          <div className="reports-stat-icon-wrapper purple">
+            <Calendar size={20} />
+          </div>
+          <div className="reports-stat-content">
+            <span className="reports-stat-label">Scheduled</span>
+            <span className="reports-stat-value">{stats.scheduled}</span>
+          </div>
         </div>
       </div>
-      <div className="reports-stat-card">
-        <div className="reports-stat-icon-wrapper green">
-          <CheckCircle size={20} />
-        </div>
-        <div className="reports-stat-content">
-          <span className="reports-stat-label">Completed</span>
-          <span className="reports-stat-value">{stats.completed}</span>
-        </div>
-      </div>
-      <div className="reports-stat-card">
-        <div className="reports-stat-icon-wrapper orange">
-          <Clock size={20} />
-        </div>
-        <div className="reports-stat-content">
-          <span className="reports-stat-label">Drafts</span>
-          <span className="reports-stat-value">{stats.draft}</span>
-        </div>
-      </div>
-      <div className="reports-stat-card">
-        <div className="reports-stat-icon-wrapper purple">
-          <Calendar size={20} />
-        </div>
-        <div className="reports-stat-content">
-          <span className="reports-stat-label">Scheduled</span>
-          <span className="reports-stat-value">{stats.scheduled}</span>
-        </div>
-      </div>
-    </div>
 
-    <ReportsListClient initialData={initialData} />
-    </>
+      <Suspense fallback={<div className="reports-loader-container">Loading reports…</div>}>
+        <ReportsListClient initialData={initialData} />
+      </Suspense>
+    </div>
   )
 }

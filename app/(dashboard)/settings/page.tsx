@@ -1,86 +1,112 @@
-import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { redirect } from "next/navigation"
-
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import SettingsClient from './SettingsClient'
 import './page.css'
 
 export default async function SettingsPage() {
   const session = await auth()
-  if (!session?.user?.id) redirect("/api/auth")
+  if (!session?.user?.id) redirect('/api/auth')
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      workspace: { select: { name: true } },
+    },
   })
-  if (!user) redirect("/api/auth")
+  if (!user) redirect('/api/auth')
+
+  const roleLabel =
+    user.role === 'ADMIN'
+      ? 'Admin'
+      : user.role === 'ANALYST'
+        ? 'Analyst'
+        : 'Viewer'
 
   return (
-    <>
-    <div className="page-header">
-      <div>
-        <h1 className="page-title">Settings</h1>
-        <p className="page-subtitle">Manage your preferences and account settings.</p>
+    <div className="settings-page">
+      <div className="page-header settings-page-header">
+        <div>
+          <h1 className="page-title">Settings</h1>
+          <p className="page-subtitle">
+            A few essentials for your account and alerts.
+          </p>
+        </div>
       </div>
-    </div>
 
-    <div className="settings-sections">
-      <div className="settings-section">
-        <h3 className="settings-section-title">General</h3>
-        <div className="settings-card">
-          {[
-            { label: 'Language', value: 'English', desc: 'Set your preferred language' },
-            { label: 'Time zone', value: 'UTC +3', desc: 'Set your time zone' },
-            { label: 'Date format', value: 'MM/DD/YYYY', desc: 'Set your preferred date format' },
-          ].map((item, i) => (
-            <div key={i} className="settings-item" id={`general-${i}`}>
-              <div>
-                <div className="settings-item-label">{item.label}</div>
-                <div className="settings-item-desc">{item.desc}</div>
+      <div className="settings-sections">
+        {/* Account */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">Account</h2>
+          <div className="settings-card">
+            <div className="settings-item">
+              <div className="settings-item-text">
+                <div className="settings-item-label">Email</div>
+                <div className="settings-item-desc">Signed-in address</div>
               </div>
               <div className="settings-item-right">
-                <span className="settings-item-value">{item.value}</span>
-                <button className="settings-item-btn">Change</button>
+                <span className="settings-item-value">{user.email}</span>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="settings-section">
-        <h3 className="settings-section-title">Notifications</h3>
-        <div className="settings-card">
-          {[
-            { label: 'Report ready', desc: 'Get notified when a report is generated', checked: true },
-            { label: 'New feedback', desc: 'Get notified when new feedback arrives', checked: false },
-            { label: 'Weekly digest', desc: 'Get a weekly summary of your feedback data', checked: true },
-          ].map((item, i) => (
-            <div key={i} className="settings-item" id={`notif-${i}`}>
-              <div>
-                <div className="settings-item-label">{item.label}</div>
-                <div className="settings-item-desc">{item.desc}</div>
-              </div>
-              <div className={`settings-item-right`}>
-                <div className={`toggle ${item.checked ? 'on' : ''}`}>
-                  <div className="toggle-knob" />
+            <div className="settings-item">
+              <div className="settings-item-text">
+                <div className="settings-item-label">Role</div>
+                <div className="settings-item-desc">
+                  {user.workspace?.name
+                    ? `In ${user.workspace.name}`
+                    : 'Workspace role'}
                 </div>
               </div>
+              <div className="settings-item-right">
+                <span className="settings-role-badge">{roleLabel}</span>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="settings-section">
-        <h3 className="settings-section-title">Account</h3>
-        <div className="settings-card">
-          <div className="settings-item">
-            <div>
-              <div className="settings-item-label">Delete account</div>
-              <div className="settings-item-desc">Permanently delete your account and all data</div>
+            <div className="settings-item">
+              <div className="settings-item-text">
+                <div className="settings-item-label">Profile</div>
+                <div className="settings-item-desc">
+                  Name, photo, and personal details
+                </div>
+              </div>
+              <div className="settings-item-right">
+                <Link href="/profile" className="settings-item-btn">
+                  Edit profile
+                </Link>
+              </div>
             </div>
-            <button className="settings-item-btn danger">Delete</button>
           </div>
-        </div>
+        </section>
+
+        {/* Notifications — only two toggles */}
+        <SettingsClient />
+
+        {/* Danger */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">Danger zone</h2>
+          <div className="settings-card settings-card-danger">
+            <div className="settings-item">
+              <div className="settings-item-text">
+                <div className="settings-item-label">Delete account</div>
+                <div className="settings-item-desc">
+                  Permanently remove your account and data
+                </div>
+              </div>
+              <div className="settings-item-right">
+                <button type="button" className="settings-item-btn danger">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
-    </>
   )
 }

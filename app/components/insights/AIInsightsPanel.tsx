@@ -10,8 +10,15 @@ import {
   BookOpen,
   type LucideIcon,
 } from 'lucide-react';
-import { aiInsights } from '../../data/dashboardData';
 import './Insights.css';
+
+export interface DashboardInsights {
+  weeklySummary: string;
+  topIssue: { title: string; detail: string };
+  recommendation: { title: string; detail: string };
+  riskAlert: { title: string; detail: string };
+  positiveHighlight: string;
+}
 
 interface InsightCardProps {
   type: string;
@@ -36,7 +43,31 @@ function InsightCard({ type, icon: Icon, label, title, detail }: InsightCardProp
   );
 }
 
-function AIInsightsPanel() {
+interface AIInsightsPanelProps {
+  insights?: DashboardInsights | null;
+}
+
+function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
+  if (!insights) {
+    return (
+      <div className="insights-panel">
+        <div className="insights-header">
+          <div className="insights-header-icon">
+            <Bot size={18} color="#fff" />
+          </div>
+          <div>
+            <h2 className="insights-title">AI Insights</h2>
+            <p className="insights-subtitle">Powered by your workspace data</p>
+          </div>
+        </div>
+        <p className="insight-card-detail" style={{ padding: '0 4px' }}>
+          No insights available yet. Add feedback to your workspace to generate
+          analysis.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="insights-panel">
       <div className="insights-header">
@@ -45,7 +76,7 @@ function AIInsightsPanel() {
         </div>
         <div>
           <h2 className="insights-title">AI Insights</h2>
-          <p className="insights-subtitle">Powered by LOOP Intelligence Engine</p>
+          <p className="insights-subtitle">Powered by your workspace data</p>
         </div>
         <div className="insights-ai-badge">
           <span className="ai-live-dot" />
@@ -58,38 +89,38 @@ function AIInsightsPanel() {
           type="summary"
           icon={BookOpen}
           label="Weekly Summary"
-          detail={aiInsights.weeklySummary}
+          detail={insights.weeklySummary}
         />
 
         <InsightCard
           type="issue"
           icon={AlertCircle}
           label="Top Issue"
-          title={aiInsights.topIssue.title}
-          detail={aiInsights.topIssue.detail}
+          title={insights.topIssue.title}
+          detail={insights.topIssue.detail}
         />
 
         <InsightCard
           type="recommendation"
           icon={Lightbulb}
           label="Recommendation"
-          title={aiInsights.recommendation.title}
-          detail={aiInsights.recommendation.detail}
+          title={insights.recommendation.title}
+          detail={insights.recommendation.detail}
         />
 
         <InsightCard
           type="risk"
           icon={AlertTriangle}
           label="Risk Alert"
-          title={aiInsights.riskAlert.title}
-          detail={aiInsights.riskAlert.detail}
+          title={insights.riskAlert.title}
+          detail={insights.riskAlert.detail}
         />
 
         <InsightCard
           type="positive"
           icon={ThumbsUp}
           label="Positive Highlight"
-          detail={aiInsights.positiveHighlight}
+          detail={insights.positiveHighlight}
         />
       </div>
     </div>

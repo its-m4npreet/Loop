@@ -81,104 +81,112 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
   }))
 
   return (
-    <>
-    <div className="page-header">
-      <div>
-        <h1 className="page-title">Analytics</h1>
-        <p className="page-subtitle">Deep-dive into trends, channel performance, and theme distribution.</p>
+    <div className="analytics-page">
+      <div className="page-header analytics-page-header">
+        <div className="analytics-page-header-text">
+          <h1 className="page-title">Analytics</h1>
+          <p className="page-subtitle">
+            Deep-dive into trends, channel performance, and theme distribution.
+          </p>
+        </div>
+        <AnalyticsHeaderClient
+          summary={summary}
+          sentiment={sentimentBreakdown}
+          channels={channelDistribution}
+          themes={topThemesChartData}
+          activeDays={days}
+        />
       </div>
-      <AnalyticsHeaderClient
-        summary={summary}
-        sentiment={sentimentBreakdown}
-        channels={channelDistribution}
-        themes={topThemesChartData}
-        activeDays={days}
-      />
-    </div>
 
-    {/* Stat Cards */}
-    <div className="analytics-stats-grid mb-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-      <div className="analytics-stat-card">
-        <div className="analytics-stat-icon-wrapper blue">
-          <MessageSquare size={20} />
+      {/* Stat Cards */}
+      <div className="analytics-stats-grid">
+        <div className="analytics-stat-card">
+          <div className="analytics-stat-icon-wrapper blue">
+            <MessageSquare size={20} />
+          </div>
+          <div className="analytics-stat-content">
+            <span className="analytics-stat-label">Total Feedback</span>
+            <span className="analytics-stat-value">
+              {summary.totalFeedback.toLocaleString()}
+            </span>
+          </div>
         </div>
-        <div className="analytics-stat-content">
-          <span className="analytics-stat-label">Total Feedback</span>
-          <span className="analytics-stat-value">{summary.totalFeedback.toLocaleString()}</span>
+        <div className="analytics-stat-card">
+          <div className="analytics-stat-icon-wrapper red">
+            <Frown size={20} />
+          </div>
+          <div className="analytics-stat-content">
+            <span className="analytics-stat-label">% Negative</span>
+            <span className="analytics-stat-value">{summary.negativePct}%</span>
+          </div>
+        </div>
+        <div className="analytics-stat-card">
+          <div className="analytics-stat-icon-wrapper teal">
+            <CalendarDays size={20} />
+          </div>
+          <div className="analytics-stat-content">
+            <span className="analytics-stat-label">New This Week</span>
+            <span className="analytics-stat-value">
+              {summary.newThisWeek.toLocaleString()}
+            </span>
+          </div>
+        </div>
+        <div className="analytics-stat-card">
+          <div className="analytics-stat-icon-wrapper green">
+            <Smile size={20} />
+          </div>
+          <div className="analytics-stat-content">
+            <span className="analytics-stat-label">Average CSAT</span>
+            <span className="analytics-stat-value">
+              {summary.avgSatisfaction} / 5.0
+            </span>
+          </div>
+        </div>
+        <div className="analytics-stat-card">
+          <div className="analytics-stat-icon-wrapper orange">
+            <Clock size={20} />
+          </div>
+          <div className="analytics-stat-content">
+            <span className="analytics-stat-label">Avg Response Time</span>
+            <span className="analytics-stat-value">
+              {summary.avgResponseTime > 60
+                ? `${Math.floor(summary.avgResponseTime / 60)}h ${summary.avgResponseTime % 60}m`
+                : `${summary.avgResponseTime}m`}
+            </span>
+          </div>
+        </div>
+        <div className="analytics-stat-card">
+          <div className="analytics-stat-icon-wrapper purple">
+            <Percent size={20} />
+          </div>
+          <div className="analytics-stat-content">
+            <span className="analytics-stat-label">Resolution Rate</span>
+            <span className="analytics-stat-value">{summary.resolutionRate}%</span>
+          </div>
         </div>
       </div>
-      <div className="analytics-stat-card">
-        <div className="analytics-stat-icon-wrapper red">
-          <Frown size={20} />
-        </div>
-        <div className="analytics-stat-content">
-          <span className="analytics-stat-label">% Negative</span>
-          <span className="analytics-stat-value">{summary.negativePct}%</span>
-        </div>
-      </div>
-      <div className="analytics-stat-card">
-        <div className="analytics-stat-icon-wrapper teal">
-          <CalendarDays size={20} />
-        </div>
-        <div className="analytics-stat-content">
-          <span className="analytics-stat-label">New This Week</span>
-          <span className="analytics-stat-value">{summary.newThisWeek.toLocaleString()}</span>
-        </div>
-      </div>
-      <div className="analytics-stat-card">
-        <div className="analytics-stat-icon-wrapper green">
-          <Smile size={20} />
-        </div>
-        <div className="analytics-stat-content">
-          <span className="analytics-stat-label">Average CSAT</span>
-          <span className="analytics-stat-value">{summary.avgSatisfaction} / 5.0</span>
-        </div>
-      </div>
-      <div className="analytics-stat-card">
-        <div className="analytics-stat-icon-wrapper orange">
-          <Clock size={20} />
-        </div>
-        <div className="analytics-stat-content">
-          <span className="analytics-stat-label">Avg Response Time</span>
-          <span className="analytics-stat-value">
-            {summary.avgResponseTime > 60 
-              ? `${Math.floor(summary.avgResponseTime / 60)}h ${summary.avgResponseTime % 60}m` 
-              : `${summary.avgResponseTime}m`}
-          </span>
-        </div>
-      </div>
-      <div className="analytics-stat-card">
-        <div className="analytics-stat-icon-wrapper purple">
-          <Percent size={20} />
-        </div>
-        <div className="analytics-stat-content">
-          <span className="analytics-stat-label">Resolution Rate</span>
-          <span className="analytics-stat-value">{summary.resolutionRate}%</span>
-        </div>
-      </div>
-    </div>
 
-    {/* Primary Charts */}
-    <div className="charts-row charts-row-2-col mb-6">
-      <FeedbackVolumeChart data={volumeOverTime} />
-      <SentimentDonutChart data={sentimentBreakdown} />
-    </div>
+      {/* Primary Charts */}
+      <div className="charts-row charts-row-2-col">
+        <FeedbackVolumeChart data={volumeOverTime} />
+        <SentimentDonutChart data={sentimentBreakdown} />
+      </div>
 
-    {/* Secondary Charts */}
-    <div className="charts-row charts-row-equal mb-6">
-      <TopThemesChart data={topThemesChartData} />
-      <FeedbackChannelsChart data={channelDistribution} />
-    </div>
+      {/* Secondary Charts */}
+      <div className="charts-row charts-row-equal">
+        <TopThemesChart data={topThemesChartData} />
+        <FeedbackChannelsChart data={channelDistribution} />
+      </div>
 
-    {/* Advanced Analytics Row */}
-    <div className="charts-row charts-row-2-col mb-6">
-      <ThemeGrowthTracker themes={themeGrowth} />
-      <PeriodComparisonCard data={periodComparison} />
-    </div>
+      {/* Advanced Analytics Row */}
+      <div className="charts-row charts-row-2-col">
+        <ThemeGrowthTracker themes={themeGrowth} />
+        <PeriodComparisonCard data={periodComparison} />
+      </div>
 
-    <div className="charts-row mb-6">
-      <ResponseTimeChart data={responseTimeDistribution} />
+      <div className="charts-row">
+        <ResponseTimeChart data={responseTimeDistribution} />
+      </div>
     </div>
-    </>
   )
 }

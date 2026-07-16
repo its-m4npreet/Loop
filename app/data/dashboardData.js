@@ -304,7 +304,7 @@ export const quickActions = [
   {
     id: 'add-feedback',
     label: 'Add Feedback',
-    description: 'Manually enter a customer feedback entry',
+    description: 'Manually enter and AI-analyze a feedback entry',
     icon: 'PlusCircle',
     color: '#22C55E',
     bgColor: '#F0FDF4',
@@ -312,7 +312,7 @@ export const quickActions = [
   {
     id: 'upload-csv',
     label: 'Upload CSV',
-    description: 'Import feedback in bulk via CSV file',
+    description: 'Bulk import feedback from a CSV file',
     icon: 'Upload',
     color: '#60A5FA',
     bgColor: '#EFF6FF',

@@ -44,11 +44,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts     Account[]
-  sessions     Session[]
-  workspace    Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  reports      Report[]
-  invitedUsers Invitation[] @relation("InvitedBy")
+  accounts         Account[]
+  sessions         Session[]
+  workspace        Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  reports          Report[]
+  invitedUsers     Invitation[] @relation("InvitedBy")
+  importedFeedback Feedback[]  @relation("ImportedBy")
 }
 
 model Account {
@@ -116,17 +117,22 @@ model Feedback {
   sentimentScore Float          @default(0)
   status         FeedbackStatus @default(NEW)
   responseTime   Int?           // minutes
-  satisfaction   Float?         // 1.0–5.0
+  satisfaction   Float?         // 1.0–5.0 rating / CSAT
+  featureArea    String?
   createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId  String
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  importedById String?
+  importedBy   User?     @relation("ImportedBy", fields: [importedById], references: [id], onDelete: SetNull)
 
   themes FeedbackTheme[]
 
   @@index([workspaceId])
   @@index([workspaceId, createdAt])
   @@index([workspaceId, sentiment])
+  @@index([importedById])
 }
 
 model Theme {

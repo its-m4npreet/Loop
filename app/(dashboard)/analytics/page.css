@@ -2,23 +2,91 @@
 @import '../dashboard/Dashboard.css';
 @import '../../components/chats/Charts.css';
 
-/* Analytics Stats Grid */
+/* ── Page shell ── */
+.analytics-page {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.analytics-page-header {
+  align-items: flex-start;
+}
+
+.analytics-page-header-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.analytics-page .page-header-actions,
+.analytics-header-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.analytics-date-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  min-width: 0;
+  max-width: 100%;
+  cursor: pointer;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.analytics-date-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.analytics-date-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 12px;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0 16px 0 0;
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 auto;
+  line-height: 1.2;
+}
+
+.analytics-export-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.analytics-page .charts-row {
+  min-width: 0;
+}
+
+.analytics-page .charts-row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* ── Analytics Stats Grid ── */
 .analytics-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: var(--space-4);
-}
-
-@media (max-width: 1024px) {
-  .analytics-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .analytics-stats-grid {
-    grid-template-columns: 1fr;
-  }
+  margin-bottom: var(--space-6);
 }
 
 /* Stat Cards */
@@ -31,7 +99,11 @@
   align-items: center;
   gap: var(--space-4);
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  min-width: 0;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .analytics-stat-card:hover {
@@ -47,6 +119,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .analytics-stat-icon-wrapper.blue {
@@ -69,22 +142,39 @@
   color: var(--color-purple-text);
 }
 
+.analytics-stat-icon-wrapper.red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.analytics-stat-icon-wrapper.teal {
+  background: rgba(20, 184, 166, 0.15);
+  color: #14b8a6;
+}
+
 .analytics-stat-content {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .analytics-stat-label {
   font-size: 12px;
   font-weight: 500;
   color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .analytics-stat-value {
   font-size: 18px;
   font-weight: 800;
   color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Theme Growth Tracker */
@@ -95,12 +185,6 @@
   margin-top: var(--space-2);
 }
 
-@media (max-width: 640px) {
-  .theme-growth-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .theme-growth-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
@@ -109,6 +193,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  min-width: 0;
   transition: border-color var(--transition-fast);
 }
 
@@ -120,24 +205,30 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .theme-growth-dot {
   width: 8px;
   height: 8px;
   border-radius: var(--radius-full);
+  flex-shrink: 0;
 }
 
 .theme-growth-name {
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .theme-growth-stats {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .theme-growth-total {
@@ -150,6 +241,7 @@
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text-muted);
+  flex-shrink: 0;
 }
 
 .theme-growth-change.up {
@@ -167,65 +259,489 @@
   font-size: 13px;
 }
 
-/* Period Comparison Widget */
-.period-comparison-grid {
+/* ── Period Comparison Card ── */
+.period-comparison-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  margin-top: var(--space-3);
+  gap: 0;
 }
 
-.period-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.period-stat-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.period-stat-value {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-text);
-  line-height: 1;
-}
-
-.period-stat-delta {
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
+.period-delta-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 2px;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.period-stat-delta.delta-positive {
+.period-delta-good {
+  background: var(--color-accent-light);
   color: var(--color-accent-dark);
 }
 
-.period-stat-delta.delta-negative {
-  color: var(--color-negative-text);
-}
-
-.period-stat-vs {
-  font-weight: 500;
-  color: var(--color-text-muted);
-  margin-left: 2px;
-}
-
-.analytics-stat-icon-wrapper.red {
-  background: rgba(239, 68, 68, 0.15);
+.period-delta-bad {
+  background: rgba(239, 68, 68, 0.12);
   color: #ef4444;
 }
 
-.analytics-stat-icon-wrapper.teal {
-  background: rgba(20, 184, 166, 0.15);
-  color: #14b8a6;
+.period-delta-neutral {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-light);
 }
 
+.period-volume-summary {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-3);
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.period-volume-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.period-volume-col.previous {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.period-volume-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+}
+
+.period-volume-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+}
+
+.period-volume-hint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.period-volume-divider {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-full);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.period-volume-meter {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+  margin-bottom: var(--space-5);
+}
+
+.period-volume-meter-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  min-width: 4px;
+  transition: width var(--transition-fast);
+}
+
+.period-volume-meter-fill.current {
+  background: var(--color-accent);
+}
+
+.period-volume-meter-fill.previous {
+  background: #cbd5e1;
+}
+
+.period-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.period-metric-row {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.period-metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.period-metric-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.period-metric-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.period-metric-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.period-metric-values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.period-metric-value-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.period-metric-value-block.previous {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.period-metric-value-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-muted);
+}
+
+.period-metric-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.period-compare-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.period-compare-bar-row {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.period-compare-bar-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.period-compare-bar-track {
+  height: 6px;
+  background: var(--color-border-light);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.period-compare-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  min-width: 2px;
+}
+
+.period-compare-bar-fill.previous {
+  background: #cbd5e1;
+}
+
+/* ── Large desktop: 6 → 3 columns for stats ── */
+@media (max-width: 1400px) {
+  .analytics-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── Tablet ── */
+@media (max-width: 1024px) {
+  .analytics-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .analytics-stat-card {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .analytics-stat-icon-wrapper {
+    width: 42px;
+    height: 42px;
+  }
+
+  .analytics-stat-value {
+    font-size: 16px;
+  }
+}
+
+/* ── Narrow tablet / large phone ── */
+@media (max-width: 900px) {
+  .analytics-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .analytics-page .page-header-actions,
+  .analytics-header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    align-items: stretch;
+  }
+
+  .analytics-date-select {
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+    padding: 0 10px;
+  }
+
+  .analytics-export-btn {
+    width: auto;
+    justify-content: center;
+    padding: 0 var(--space-4);
+  }
+
+  .analytics-page .page-header-actions .btn-secondary,
+  .analytics-page .page-header-actions .btn-primary {
+    min-width: 0;
+  }
+
+  .analytics-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .period-metrics-list {
+    max-height: none;
+  }
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .analytics-page-header {
+    margin-bottom: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .analytics-page .page-subtitle {
+    max-width: none;
+  }
+
+  .analytics-page .page-header-actions,
+  .analytics-header-actions {
+    width: 100%;
+    display: grid;
+    /* Date range grows; Export stays compact beside it */
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .analytics-page .page-header-actions .btn-secondary,
+  .analytics-page .page-header-actions .btn-primary,
+  .analytics-date-select,
+  .analytics-export-btn {
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .analytics-date-select {
+    padding: 0 10px;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .analytics-date-select select {
+    font-size: 12px;
+    width: 100%;
+  }
+
+  .analytics-export-btn {
+    padding: 0 12px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Keep a 2-column stats grid on all mobile widths */
+  .analytics-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .analytics-stat-card {
+    padding: var(--space-3);
+    gap: var(--space-2);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .analytics-stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .analytics-stat-icon-wrapper svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .analytics-stat-label {
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .analytics-stat-value {
+    font-size: 15px;
+  }
+
+  /* Theme growth stays 2-col on mobile as well */
+  .theme-growth-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  .period-volume-value {
+    font-size: 22px;
+  }
+
+  .period-metric-value {
+    font-size: 14px;
+  }
+
+  .analytics-page .charts-row {
+    margin-bottom: var(--space-4);
+  }
+}
+
+/* ── Small mobile (<400px): still 2 columns, tighter cards ── */
+@media (max-width: 400px) {
+  .analytics-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .analytics-stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--space-2) var(--space-3);
+    gap: 6px;
+  }
+
+  .analytics-stat-icon-wrapper {
+    width: 32px;
+    height: 32px;
+  }
+
+  .analytics-stat-icon-wrapper svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .analytics-stat-label {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .analytics-stat-value {
+    font-size: 14px;
+  }
+
+  .theme-growth-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .theme-growth-card {
+    padding: var(--space-3);
+  }
+
+  .theme-growth-total {
+    font-size: 16px;
+  }
+
+  .theme-growth-name {
+    font-size: 12px;
+  }
+
+  /* Keep date + export on one row even under 400px */
+  .analytics-page .page-header-actions,
+  .analytics-header-actions {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .analytics-date-select {
+    height: 34px;
+    padding: 0 8px;
+    gap: 4px;
+  }
+
+  .analytics-date-icon {
+    width: 13px;
+    height: 13px;
+  }
+
+  .analytics-date-select select {
+    font-size: 11px;
+  }
+
+  .analytics-export-btn {
+    height: 34px;
+    padding: 0 10px;
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  .analytics-export-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+}

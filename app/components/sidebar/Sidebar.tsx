@@ -19,6 +19,7 @@ import {
   Plus,
   FolderOpen,
   Infinity,
+  Download,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -32,6 +33,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { id: 'dashboard',       label: 'Dashboard',      icon: LayoutDashboard, href: '/dashboard' },
   { id: 'feedback-inbox',  label: 'Feedback Inbox', icon: MessageSquare,   href: '/feedback-inbox' },
+  { id: 'import-feedback', label: 'Import Feedback', icon: Download,       href: '/import-feedback' },
   { id: 'analytics',       label: 'Analytics',      icon: BarChart2,       href: '/analytics' },
   { id: 'themes',          label: 'Themes',         icon: Tag,             href: '/themes' },
   { id: 'ask-loop',        label: 'Ask LOOP',       icon: Bot,             href: '/ask-loop' },

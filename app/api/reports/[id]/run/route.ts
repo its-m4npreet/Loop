@@ -35,11 +35,22 @@ export async function POST(
       return NextResponse.json({ error: "Report configuration is missing start or end dates." }, { status: 400 });
     }
 
+    // Expand date-only end bounds so the full end day is included
+    const periodStart = report.periodStart;
+    const periodEnd = new Date(report.periodEnd);
+    if (
+      periodEnd.getUTCHours() === 0 &&
+      periodEnd.getUTCMinutes() === 0 &&
+      periodEnd.getUTCSeconds() === 0
+    ) {
+      periodEnd.setUTCHours(23, 59, 59, 999);
+    }
+
     // Fetch feedbacks for the period
     const feedback = await prisma.feedback.findMany({
       where: {
         workspaceId: user.workspaceId,
-        createdAt: { gte: report.periodStart, lte: report.periodEnd },
+        createdAt: { gte: periodStart, lte: periodEnd },
       },
       include: {
         themes: {
@@ -64,10 +75,10 @@ export async function POST(
       themes: f.themes.map((ft) => ft.theme.name),
     }));
 
-    const periodLabel = `${report.periodStart.toLocaleDateString("en-US", {
+    const periodLabel = `${periodStart.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-    })} – ${report.periodEnd.toLocaleDateString("en-US", {
+    })} – ${periodEnd.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",

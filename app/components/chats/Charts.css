@@ -6,13 +6,22 @@
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   box-shadow: var(--shadow-sm);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .chart-card-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: var(--space-3);
   margin-bottom: var(--space-5);
+  min-width: 0;
+}
+
+.chart-card-header > div {
+  min-width: 0;
 }
 
 .chart-card-title {
@@ -34,6 +43,14 @@
   border-radius: var(--radius-full);
   background: var(--color-accent-light);
   color: var(--color-accent-dark);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.chart-body {
+  width: 100%;
+  min-width: 0;
+  height: 220px;
 }
 
 /* ── Donut chart legend ── */
@@ -74,6 +91,20 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  min-width: 0;
+  width: 100%;
+}
+
+.donut-chart-canvas {
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .chart-body {
+    height: 200px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -82,9 +113,22 @@
     align-items: center;
   }
 
+  .donut-chart-canvas {
+    width: 160px;
+    height: 160px;
+  }
+
   .donut-legend {
     padding-left: 0;
     width: 100%;
+  }
+
+  .chart-body {
+    height: 180px;
+  }
+
+  .chart-card-header {
+    flex-wrap: wrap;
   }
 }
 
@@ -99,6 +143,11 @@
 
   .donut-legend-value {
     font-size: 12px;
+  }
+
+  .chart-pill-badge {
+    font-size: 11px;
+    padding: 2px 8px;
   }
 }
 
@@ -130,5 +179,9 @@
 
   .chart-card-title {
     font-size: 13px;
+  }
+
+  .chart-body {
+    height: 160px;
   }
 }

@@ -3,6 +3,7 @@
 import React, { useState, type ReactNode } from 'react';
 import Navbar from '../components/navbar/Navbar';
 import Sidebar from '../components/sidebar/Sidebar';
+import QuickActions from '../components/quicksActions/QuickActions';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -33,6 +34,7 @@ export default function DashboardLayout({ children, userName, userEmail, userIma
         />
         <main className="dashboard-content">
           {children}
+          <QuickActions />
         </main>
       </div>
     </div>

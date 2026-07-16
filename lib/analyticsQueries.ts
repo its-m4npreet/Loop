@@ -129,6 +129,69 @@ export async function getChannelDistribution(workspaceId: string, days?: number)
 }
 
 // ── 5. Top Themes ──
+export async function getThemesForWorkspace(workspaceId: string) {
+  const now = new Date();
+  const oneWeekAgo = daysAgo(7);
+  const twoWeeksAgo = daysAgo(14);
+
+  const themes = await prisma.theme.findMany({
+    where: { workspaceId },
+    include: {
+      feedbacks: {
+        include: {
+          feedback: { select: { createdAt: true, sentiment: true } },
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  return themes
+    .map((theme) => {
+      const totalMentions = theme.feedbacks.length;
+      const thisWeek = theme.feedbacks.filter(
+        (ft) =>
+          ft.feedback.createdAt >= oneWeekAgo && ft.feedback.createdAt <= now
+      ).length;
+      const lastWeek = theme.feedbacks.filter(
+        (ft) =>
+          ft.feedback.createdAt >= twoWeeksAgo &&
+          ft.feedback.createdAt < oneWeekAgo
+      ).length;
+      const weeklyChange =
+        lastWeek > 0
+          ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100)
+          : thisWeek > 0
+            ? 100
+            : 0;
+
+      const positive = theme.feedbacks.filter(
+        (ft) => ft.feedback.sentiment === "POSITIVE"
+      ).length;
+      const negative = theme.feedbacks.filter(
+        (ft) => ft.feedback.sentiment === "NEGATIVE"
+      ).length;
+      const positivePct =
+        totalMentions > 0 ? Math.round((positive / totalMentions) * 100) : 0;
+      const negativePct =
+        totalMentions > 0 ? Math.round((negative / totalMentions) * 100) : 0;
+
+      return {
+        id: theme.id,
+        name: theme.name,
+        description: theme.description,
+        color: theme.color,
+        mentions: totalMentions,
+        thisWeek,
+        lastWeek,
+        weeklyChange,
+        positivePct,
+        negativePct,
+      };
+    })
+    .sort((a, b) => b.mentions - a.mentions);
+}
+
 export async function getTopThemes(workspaceId: string, limit = 6, days?: number) {
   const now = new Date();
   const oneWeekAgo = daysAgo(7);
@@ -143,19 +206,27 @@ export async function getTopThemes(workspaceId: string, limit = 6, days?: number
     },
   });
 
-  const result = themes
+  return themes
     .map((theme) => {
       const filteredFeedbacks = days
         ? theme.feedbacks.filter((ft) => ft.feedback.createdAt >= daysAgo(days))
         : theme.feedbacks;
       const totalMentions = filteredFeedbacks.length;
       const thisWeek = theme.feedbacks.filter(
-        (ft) => ft.feedback.createdAt >= oneWeekAgo && ft.feedback.createdAt <= now
+        (ft) =>
+          ft.feedback.createdAt >= oneWeekAgo && ft.feedback.createdAt <= now
       ).length;
       const lastWeek = theme.feedbacks.filter(
-        (ft) => ft.feedback.createdAt >= twoWeeksAgo && ft.feedback.createdAt < oneWeekAgo
+        (ft) =>
+          ft.feedback.createdAt >= twoWeeksAgo &&
+          ft.feedback.createdAt < oneWeekAgo
       ).length;
-      const weeklyChange = lastWeek > 0 ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : 0;
+      const weeklyChange =
+        lastWeek > 0
+          ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100)
+          : thisWeek > 0
+            ? 100
+            : 0;
 
       return {
         theme: theme.name,
@@ -168,8 +239,6 @@ export async function getTopThemes(workspaceId: string, limit = 6, days?: number
     })
     .sort((a, b) => b.mentions - a.mentions)
     .slice(0, limit);
-
-  return result;
 }
 
 // ── 6. Theme Growth Over Time (weekly buckets for sparklines) ──
@@ -205,40 +274,131 @@ export async function getThemeGrowthOverTime(workspaceId: string, weeks = 8) {
 }
 
 // ── 7. Period Comparison ──
+function pctChange(current: number, previous: number): number {
+  if (previous === 0) return current > 0 ? 100 : 0;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+function avgFrom(values: number[]): number {
+  if (values.length === 0) return 0;
+  return values.reduce((s, v) => s + v, 0) / values.length;
+}
+
 export async function getPeriodComparison(workspaceId: string, periodDays = 30) {
   const currentStart = daysAgo(periodDays);
   const previousStart = daysAgo(periodDays * 2);
   const previousEnd = daysAgo(periodDays);
 
-  const [currentFeedback, previousFeedback, currentNeg, previousNeg] = await Promise.all([
-    prisma.feedback.count({ where: { workspaceId, createdAt: { gte: currentStart } } }),
-    prisma.feedback.count({ where: { workspaceId, createdAt: { gte: previousStart, lt: previousEnd } } }),
-    prisma.feedback.count({ where: { workspaceId, createdAt: { gte: currentStart }, sentiment: "NEGATIVE" } }),
-    prisma.feedback.count({ where: { workspaceId, createdAt: { gte: previousStart, lt: previousEnd }, sentiment: "NEGATIVE" } }),
+  const currentWhere = { workspaceId, createdAt: { gte: currentStart } };
+  const previousWhere = {
+    workspaceId,
+    createdAt: { gte: previousStart, lt: previousEnd },
+  };
+
+  const [
+    currentTotal,
+    previousTotal,
+    currentPos,
+    previousPos,
+    currentNeg,
+    previousNeg,
+    currentActioned,
+    previousActioned,
+    currentWithResponse,
+    previousWithResponse,
+    currentWithSat,
+    previousWithSat,
+  ] = await Promise.all([
+    prisma.feedback.count({ where: currentWhere }),
+    prisma.feedback.count({ where: previousWhere }),
+    prisma.feedback.count({ where: { ...currentWhere, sentiment: "POSITIVE" } }),
+    prisma.feedback.count({ where: { ...previousWhere, sentiment: "POSITIVE" } }),
+    prisma.feedback.count({ where: { ...currentWhere, sentiment: "NEGATIVE" } }),
+    prisma.feedback.count({ where: { ...previousWhere, sentiment: "NEGATIVE" } }),
+    prisma.feedback.count({ where: { ...currentWhere, status: "ACTIONED" } }),
+    prisma.feedback.count({ where: { ...previousWhere, status: "ACTIONED" } }),
+    prisma.feedback.findMany({
+      where: { ...currentWhere, responseTime: { not: null } },
+      select: { responseTime: true },
+    }),
+    prisma.feedback.findMany({
+      where: { ...previousWhere, responseTime: { not: null } },
+      select: { responseTime: true },
+    }),
+    prisma.feedback.findMany({
+      where: { ...currentWhere, satisfaction: { not: null } },
+      select: { satisfaction: true },
+    }),
+    prisma.feedback.findMany({
+      where: { ...previousWhere, satisfaction: { not: null } },
+      select: { satisfaction: true },
+    }),
   ]);
 
-  const volumeChange = previousFeedback > 0
-    ? Math.round(((currentFeedback - previousFeedback) / previousFeedback) * 100)
-    : 0;
+  const currentPosPct =
+    currentTotal > 0 ? Math.round((currentPos / currentTotal) * 100) : 0;
+  const previousPosPct =
+    previousTotal > 0 ? Math.round((previousPos / previousTotal) * 100) : 0;
+  const currentNegPct =
+    currentTotal > 0 ? Math.round((currentNeg / currentTotal) * 100) : 0;
+  const previousNegPct =
+    previousTotal > 0 ? Math.round((previousNeg / previousTotal) * 100) : 0;
+  const currentResolution =
+    currentTotal > 0 ? Math.round((currentActioned / currentTotal) * 100) : 0;
+  const previousResolution =
+    previousTotal > 0 ? Math.round((previousActioned / previousTotal) * 100) : 0;
 
-  const currentNegPct = currentFeedback > 0 ? Math.round((currentNeg / currentFeedback) * 100) : 0;
-  const previousNegPct = previousFeedback > 0 ? Math.round((previousNeg / previousFeedback) * 100) : 0;
-  const negChange = previousNegPct > 0
-    ? Math.round(((currentNegPct - previousNegPct) / previousNegPct) * 100)
-    : 0;
+  const currentAvgResponse = Math.round(
+    avgFrom(currentWithResponse.map((f) => f.responseTime ?? 0))
+  );
+  const previousAvgResponse = Math.round(
+    avgFrom(previousWithResponse.map((f) => f.responseTime ?? 0))
+  );
+  const currentCsat = parseFloat(
+    avgFrom(currentWithSat.map((f) => f.satisfaction ?? 0)).toFixed(1)
+  );
+  const previousCsat = parseFloat(
+    avgFrom(previousWithSat.map((f) => f.satisfaction ?? 0)).toFixed(1)
+  );
+
+  const volumeChange = pctChange(currentTotal, previousTotal);
+  const posChange = pctChange(currentPosPct, previousPosPct);
+  const negChange = pctChange(currentNegPct, previousNegPct);
+  const resolutionChange = pctChange(currentResolution, previousResolution);
+  // Lower response time is better — invert sign for display of "improvement"
+  const responseChange = pctChange(currentAvgResponse, previousAvgResponse);
+  const csatChange =
+    previousCsat > 0
+      ? Math.round(((currentCsat - previousCsat) / previousCsat) * 100)
+      : currentCsat > 0
+        ? 100
+        : 0;
 
   return {
     current: {
-      totalFeedback: currentFeedback,
+      totalFeedback: currentTotal,
+      positivePct: currentPosPct,
       negativePct: currentNegPct,
+      resolutionRate: currentResolution,
+      avgResponseTime: currentAvgResponse,
+      avgSatisfaction: currentCsat,
     },
     previous: {
-      totalFeedback: previousFeedback,
+      totalFeedback: previousTotal,
+      positivePct: previousPosPct,
       negativePct: previousNegPct,
+      resolutionRate: previousResolution,
+      avgResponseTime: previousAvgResponse,
+      avgSatisfaction: previousCsat,
     },
     volumeChange,
+    posChange,
     negChange,
-    periodLabel: `Last ${periodDays} days`,
+    resolutionChange,
+    responseChange,
+    csatChange,
+    periodLabel: `Last ${periodDays} days vs prior ${periodDays} days`,
+    periodDays,
   };
 }
 

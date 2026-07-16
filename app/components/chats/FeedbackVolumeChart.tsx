@@ -42,38 +42,43 @@ function FeedbackVolumeChart({ data }: FeedbackVolumeChartProps) {
         <span className="chart-pill-badge">↑ 18% this week</span>
       </div>
 
-      <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-          <defs>
-            <linearGradient id="feedbackGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%"  stopColor="#22C55E" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#22C55E" stopOpacity={0}    />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
-          <XAxis
-            dataKey="date"
-            tick={{ fontSize: 12, fill: '#9CA3AF' }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fontSize: 12, fill: '#9CA3AF' }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#E5E7EB', strokeWidth: 1 }} />
-          <Area
-            type="monotone"
-            dataKey="count"
-            stroke="#22C55E"
-            strokeWidth={2.5}
-            fill="url(#feedbackGradient)"
-            dot={{ r: 4, fill: '#22C55E', strokeWidth: 2, stroke: '#fff' }}
-            activeDot={{ r: 6, fill: '#22C55E', stroke: '#fff', strokeWidth: 2 }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <div className="chart-body">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 5, right: 8, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="feedbackGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor="#22C55E" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#22C55E" stopOpacity={0}    />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 11, fill: '#9CA3AF' }}
+              axisLine={false}
+              tickLine={false}
+              interval="preserveStartEnd"
+              minTickGap={16}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: '#9CA3AF' }}
+              axisLine={false}
+              tickLine={false}
+              width={36}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#E5E7EB', strokeWidth: 1 }} />
+            <Area
+              type="monotone"
+              dataKey="count"
+              stroke="#22C55E"
+              strokeWidth={2.5}
+              fill="url(#feedbackGradient)"
+              dot={{ r: 3, fill: '#22C55E', strokeWidth: 2, stroke: '#fff' }}
+              activeDot={{ r: 5, fill: '#22C55E', stroke: '#fff', strokeWidth: 2 }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
