@@ -1,0 +1,142 @@
+[
+  {
+    "content": "5 stars — the analytics dashboard finally makes feedback actionable for our product team.",
+    "channel": "App Review",
+    "customer_name": "AppStoreUser_42",
+    "rating": 5,
+    "created_at": "2026-06-20T08:00:00.000Z"
+  },
+  {
+    "content": "Crashes every time I open the themes tab on Android 14. Unusable.",
+    "channel": "App Review",
+    "customer_name": "android_dev_mike",
+    "rating": 1,
+    "created_at": "2026-06-21T12:30:00.000Z"
+  },
+  {
+    "content": "Beautiful UI and dark mode. Wish search was a bit faster though.",
+    "channel": "App Review",
+    "customer_name": "design_sara",
+    "rating": 4,
+    "created_at": "2026-06-22T09:15:00.000Z"
+  },
+  {
+    "content": "Login with Google works great. Onboarding took less than 10 minutes.",
+    "channel": "App Review",
+    "customer_name": "pm_rachel",
+    "rating": 5,
+    "created_at": "2026-06-23T16:40:00.000Z"
+  },
+  {
+    "content": "Too expensive for small teams. Please add a starter plan under $30.",
+    "channel": "App Review",
+    "customer_name": "startup_foundr",
+    "rating": 2,
+    "created_at": "2026-06-24T11:05:00.000Z"
+  },
+  {
+    "content": "Notifications keep waking me up at night. No quiet hours setting?",
+    "channel": "App Review",
+    "customer_name": "night_owl_99",
+    "rating": 2,
+    "created_at": "2026-06-25T22:10:00.000Z"
+  },
+  {
+    "content": "Best feedback tool I've used. Theme clustering is scarily accurate.",
+    "channel": "App Review",
+    "customer_name": "cx_leader_jen",
+    "rating": 5,
+    "created_at": "2026-06-26T07:45:00.000Z"
+  },
+  {
+    "content": "App freezes when exporting large CSVs over 10k rows.",
+    "channel": "App Review",
+    "customer_name": "data_ops_leo",
+    "rating": 2,
+    "created_at": "2026-06-27T14:20:00.000Z"
+  },
+  {
+    "content": "Solid product. Mobile experience still lags behind the web app.",
+    "channel": "App Review",
+    "customer_name": "hybrid_user",
+    "rating": 3,
+    "created_at": "2026-06-28T10:00:00.000Z"
+  },
+  {
+    "content": "Love Ask LOOP — answers our sentiment questions in seconds.",
+    "channel": "App Review",
+    "customer_name": "insights_amy",
+    "rating": 5,
+    "created_at": "2026-06-29T13:35:00.000Z"
+  },
+  {
+    "content": "Billing page is confusing. Charged twice and support took 2 days.",
+    "channel": "App Review",
+    "customer_name": "frustrated_buyer",
+    "rating": 1,
+    "created_at": "2026-06-30T18:50:00.000Z"
+  },
+  {
+    "content": "Clean charts, clear themes, great for weekly product reviews.",
+    "channel": "App Review",
+    "customer_name": "prod_mgr_kai",
+    "rating": 4,
+    "created_at": "2026-07-01T09:25:00.000Z"
+  },
+  {
+    "content": "Needs offline mode. Airplane wifi makes the app unusable.",
+    "channel": "App Review",
+    "customer_name": "travel_pm",
+    "rating": 3,
+    "created_at": "2026-07-02T20:15:00.000Z"
+  },
+  {
+    "content": "Security features (2FA, roles) give us confidence for enterprise use.",
+    "channel": "App Review",
+    "customer_name": "sec_ops_dan",
+    "rating": 5,
+    "created_at": "2026-07-03T11:40:00.000Z"
+  },
+  {
+    "content": "Update broke push notifications. Nothing arrives since v2.4.",
+    "channel": "App Review",
+    "customer_name": "qa_tester_88",
+    "rating": 1,
+    "created_at": "2026-07-05T08:55:00.000Z"
+  },
+  {
+    "content": "Report generation is magic. Leadership loves the executive summary.",
+    "channel": "App Review",
+    "customer_name": "ceo_assistant",
+    "rating": 5,
+    "created_at": "2026-07-07T15:00:00.000Z"
+  },
+  {
+    "content": "UI feels a bit dated compared to competitors. Mobile nav is cramped.",
+    "channel": "App Review",
+    "customer_name": "ux_critic",
+    "rating": 3,
+    "created_at": "2026-07-09T12:30:00.000Z"
+  },
+  {
+    "content": "Importing historical feedback was painless. 5k rows, zero errors.",
+    "channel": "App Review",
+    "customer_name": "ops_hero",
+    "rating": 5,
+    "created_at": "2026-07-11T10:10:00.000Z"
+  },
+  {
+    "content": "App Store listing says real-time sync but charts lag 10+ minutes.",
+    "channel": "App Review",
+    "customer_name": "skeptical_sam",
+    "rating": 2,
+    "created_at": "2026-07-13T16:45:00.000Z"
+  },
+  {
+    "content": "Would recommend to any CX team. Game changer for our process.",
+    "channel": "App Review",
+    "customer_name": "happy_cx_lead",
+    "rating": 5,
+    "created_at": "2026-07-15T07:20:00.000Z"
+  }
+]

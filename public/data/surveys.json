@@ -1,0 +1,163 @@
+[
+  {
+    "content": "Overall satisfied. Would love a Jira integration for closing the loop.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1042",
+    "rating": 4,
+    "created_at": "2026-06-18T10:00:00.000Z"
+  },
+  {
+    "content": "NPS: promoters love insights, but setup still feels heavy for SMBs.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1043",
+    "rating": 3,
+    "created_at": "2026-06-19T11:30:00.000Z"
+  },
+  {
+    "content": "Cannot find how to change my password. Settings UX needs work.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1044",
+    "rating": 2,
+    "created_at": "2026-06-20T09:15:00.000Z"
+  },
+  {
+    "content": "Customer service is outstanding. Best SaaS support experience this year.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1045",
+    "rating": 5,
+    "created_at": "2026-06-21T14:00:00.000Z"
+  },
+  {
+    "content": "Billing is transparent and fair for the value we get.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1046",
+    "rating": 4,
+    "created_at": "2026-06-22T08:45:00.000Z"
+  },
+  {
+    "content": "Performance is fine until we hit large datasets — then everything slows.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1047",
+    "rating": 3,
+    "created_at": "2026-06-23T16:20:00.000Z"
+  },
+  {
+    "content": "Please add bulk import for historical feedback from Zendesk.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1048",
+    "rating": 3,
+    "created_at": "2026-06-24T12:10:00.000Z"
+  },
+  {
+    "content": "The product completely changed how we handle customer feedback.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1049",
+    "rating": 5,
+    "created_at": "2026-06-25T10:30:00.000Z"
+  },
+  {
+    "content": "Neutral. Does the job, but competitors have better mobile apps.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1050",
+    "rating": 3,
+    "created_at": "2026-06-26T15:50:00.000Z"
+  },
+  {
+    "content": "Security audit passed easily thanks to your RBAC and SSO roadmap.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1051",
+    "rating": 5,
+    "created_at": "2026-06-27T09:00:00.000Z"
+  },
+  {
+    "content": "Invoice PDF does not render correctly in Safari.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1052",
+    "rating": 2,
+    "created_at": "2026-06-28T13:25:00.000Z"
+  },
+  {
+    "content": "Onboarding emails were super helpful. Made team rollout seamless.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1053",
+    "rating": 5,
+    "created_at": "2026-06-29T11:40:00.000Z"
+  },
+  {
+    "content": "Need more chart types in analytics — waterfall and cohort would help.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1054",
+    "rating": 4,
+    "created_at": "2026-06-30T17:15:00.000Z"
+  },
+  {
+    "content": "Support response took 3 days. Too slow for a paid enterprise plan.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1055",
+    "rating": 1,
+    "created_at": "2026-07-01T08:20:00.000Z"
+  },
+  {
+    "content": "Search is lightning fast. Finding specific feedback takes seconds.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1056",
+    "rating": 5,
+    "created_at": "2026-07-02T14:55:00.000Z"
+  },
+  {
+    "content": "Would renew if you ship Salesforce sync this quarter.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1057",
+    "rating": 3,
+    "created_at": "2026-07-04T10:05:00.000Z"
+  },
+  {
+    "content": "CSAT improved after we started using LOOP themes in standups.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1058",
+    "rating": 5,
+    "created_at": "2026-07-06T12:00:00.000Z"
+  },
+  {
+    "content": "Login SSO fails intermittently with Azure AD.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1059",
+    "rating": 2,
+    "created_at": "2026-07-08T09:35:00.000Z"
+  },
+  {
+    "content": "Reporting covers the basics but nothing innovative for execs.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1060",
+    "rating": 3,
+    "created_at": "2026-07-10T16:40:00.000Z"
+  },
+  {
+    "content": "Happy to recommend. Pricing is fair and product keeps improving.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1061",
+    "rating": 4,
+    "created_at": "2026-07-12T11:15:00.000Z"
+  },
+  {
+    "content": "Dark mode please on web — only available on mobile right now.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1062",
+    "rating": 3,
+    "created_at": "2026-07-13T19:00:00.000Z"
+  },
+  {
+    "content": "Payment failed twice at checkout before finally going through.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1063",
+    "rating": 1,
+    "created_at": "2026-07-14T13:50:00.000Z"
+  },
+  {
+    "content": "Feature request: schedule reports to Slack every Monday 9am.",
+    "channel": "Survey Response",
+    "customer_name": "Survey #1064",
+    "rating": 4,
+    "created_at": "2026-07-15T08:30:00.000Z"
+  }
+]

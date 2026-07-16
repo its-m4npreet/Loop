@@ -40,25 +40,27 @@ function SentimentDonutChart({ data }: SentimentDonutChartProps) {
       </div>
 
       <div className="donut-chart-wrap">
-        <ResponsiveContainer width={180} height={180}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={52}
-              outerRadius={78}
-              paddingAngle={3}
-              dataKey="value"
-              strokeWidth={0}
-            >
-              {chartData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
+        <div className="donut-chart-canvas">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius="58%"
+                outerRadius="88%"
+                paddingAngle={3}
+                dataKey="value"
+                strokeWidth={0}
+              >
+                {chartData.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
 
         <div className="donut-legend">
           {chartData.map((item) => (

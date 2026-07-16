@@ -41,32 +41,38 @@ function FeedbackChannelsChart({ data }: FeedbackChannelsChartProps) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart
-          data={chartData}
-          margin={{ top: 5, right: 10, left: -25, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
-          <XAxis
-            dataKey="channel"
-            tick={{ fontSize: 11, fill: '#9CA3AF' }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fontSize: 11, fill: '#9CA3AF' }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(34,197,94,0.06)' }} />
-          <Bar
-            dataKey="count"
-            fill="#22C55E"
-            radius={[6, 6, 0, 0]}
-            barSize={32}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="chart-body">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={chartData}
+            margin={{ top: 5, right: 8, left: -20, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
+            <XAxis
+              dataKey="channel"
+              tick={{ fontSize: 11, fill: '#9CA3AF' }}
+              axisLine={false}
+              tickLine={false}
+              interval={0}
+              angle={0}
+              minTickGap={8}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: '#9CA3AF' }}
+              axisLine={false}
+              tickLine={false}
+              width={36}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(34,197,94,0.06)' }} />
+            <Bar
+              dataKey="count"
+              fill="#22C55E"
+              radius={[6, 6, 0, 0]}
+              maxBarSize={36}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

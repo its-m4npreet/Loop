@@ -1,64 +1,147 @@
-import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { redirect } from "next/navigation"
-import { Plus, Search } from 'lucide-react'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
+import { Tag, TrendingUp, TrendingDown, MessageSquare } from 'lucide-react'
 
-import ThemeCard, { type Theme } from '../../components/cards/ThemeCard'
 import TopThemesChart from '../../components/chats/TopThemesChart'
+import ThemeGrowthTracker from '../../components/chats/ThemeGrowthTracker'
+import {
+  getThemesForWorkspace,
+  getTopThemes,
+  getThemeGrowthOverTime,
+} from '@/lib/analyticsQueries'
+import ThemesClient, { type ThemeItem } from './ThemesClient'
 import './page.css'
 
-const themesData: Theme[] = [
-  { id: '1', name: 'UI / UX', icon: 'Monitor', color: '#60A5FA', bgColor: '#EFF6FF', mentions: 1248, weeklyGrowth: '+16%', growthType: 'positive' as const },
-  { id: '2', name: 'Pricing', icon: 'DollarSign', color: '#22C55E', bgColor: '#F0FDF4', mentions: 892, weeklyGrowth: '+9%', growthType: 'positive' as const },
-  { id: '3', name: 'Customer Support', icon: 'Headphones', color: '#A78BFA', bgColor: '#F5F3FF', mentions: 712, weeklyGrowth: '-3%', growthType: 'negative' as const },
-  { id: '4', name: 'Performance', icon: 'Zap', color: '#F59E0B', bgColor: '#FFFBEB', mentions: 561, weeklyGrowth: '+22%', growthType: 'positive' as const },
-  { id: '5', name: 'Features', icon: 'Layers', color: '#F97316', bgColor: '#FFF7ED', mentions: 445, weeklyGrowth: '+11%', growthType: 'positive' as const },
-  { id: '6', name: 'Mobile App', icon: 'Smartphone', color: '#3B82F6', bgColor: '#EFF6FF', mentions: 378, weeklyGrowth: '-8%', growthType: 'negative' as const },
-];
+function toThemeItem(
+  t: Awaited<ReturnType<typeof getThemesForWorkspace>>[number]
+): ThemeItem {
+  const growthType: ThemeItem['growthType'] =
+    t.weeklyChange > 0 ? 'positive' : t.weeklyChange < 0 ? 'negative' : 'neutral'
+  const sign = t.weeklyChange > 0 ? '+' : ''
+  return {
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    color: t.color,
+    mentions: t.mentions,
+    thisWeek: t.thisWeek,
+    positivePct: t.positivePct,
+    negativePct: t.negativePct,
+    growthType,
+    weeklyGrowth: `${sign}${t.weeklyChange}%`,
+  }
+}
 
 export default async function ThemesPage() {
   const session = await auth()
-  if (!session?.user?.id) redirect("/api/auth")
+  if (!session?.user?.id) redirect('/api/auth')
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
+    select: { id: true, workspaceId: true },
   })
-  if (!user) redirect("/api/auth")
+  if (!user) redirect('/api/auth')
+
+  if (!user.workspaceId) {
+    return (
+      <div className="themes-page">
+        <div className="page-header themes-page-header">
+          <div className="themes-page-header-text">
+            <h1 className="page-title">Themes</h1>
+            <p className="page-subtitle">
+              You are not part of a workspace yet.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const [themes, topThemes, themeGrowth] = await Promise.all([
+    getThemesForWorkspace(user.workspaceId),
+    getTopThemes(user.workspaceId, 8),
+    getThemeGrowthOverTime(user.workspaceId, 8),
+  ])
+
+  const themeItems = themes.map(toThemeItem)
+  const totalMentions = themes.reduce((s, t) => s + t.mentions, 0)
+  const rising = themes.filter((t) => t.weeklyChange > 0).length
+  const falling = themes.filter((t) => t.weeklyChange < 0).length
+
+  const chartData = topThemes.map((t) => ({
+    theme: t.theme,
+    mentions: t.mentions,
+  }))
 
   return (
-    <>
-    <div className="page-header">
-      <div>
-        <h1 className="page-title">Themes</h1>
-        <p className="page-subtitle">Track trending topics and themes across all feedback.</p>
+    <div className="themes-page">
+      <div className="page-header themes-page-header">
+        <div className="themes-page-header-text">
+          <h1 className="page-title">Themes</h1>
+          <p className="page-subtitle">
+            Track trending topics and themes across all customer feedback.
+          </p>
+        </div>
       </div>
-      <div className="page-header-actions">
-        <button className="btn-secondary" id="search-themes-btn">
-          <Search size={15} />
-          Search Themes
-        </button>
-        <button className="btn-primary" id="add-theme-btn">
-          <Plus size={15} />
-          Add Theme
-        </button>
-      </div>
-    </div>
 
-    <div className="themes-grid" style={{ marginBottom: '24px' }}>
-      {themesData.slice(0, 4).map((theme) => (
-        <ThemeCard key={theme.id} theme={theme as Theme} />
-      ))}
-    </div>
-
-    <div className="section-title">Trending Themes</div>
-    <div className="charts-row charts-row-equal mb-6">
-      <TopThemesChart />
-      <div className="themes-grid" style={{ marginBottom: 0 }}>
-        {themesData.slice(4).map((theme) => (
-          <ThemeCard key={theme.id} theme={theme as Theme} />
-        ))}
+      {/* Stats */}
+      <div className="themes-stats-grid">
+        <div className="themes-stat-card">
+          <div className="themes-stat-icon purple">
+            <Tag size={20} />
+          </div>
+          <div className="themes-stat-content">
+            <span className="themes-stat-label">Total Themes</span>
+            <span className="themes-stat-value">{themes.length}</span>
+          </div>
+        </div>
+        <div className="themes-stat-card">
+          <div className="themes-stat-icon blue">
+            <MessageSquare size={20} />
+          </div>
+          <div className="themes-stat-content">
+            <span className="themes-stat-label">Total Mentions</span>
+            <span className="themes-stat-value">
+              {totalMentions.toLocaleString()}
+            </span>
+          </div>
+        </div>
+        <div className="themes-stat-card">
+          <div className="themes-stat-icon green">
+            <TrendingUp size={20} />
+          </div>
+          <div className="themes-stat-content">
+            <span className="themes-stat-label">Rising</span>
+            <span className="themes-stat-value">{rising}</span>
+          </div>
+        </div>
+        <div className="themes-stat-card">
+          <div className="themes-stat-icon red">
+            <TrendingDown size={20} />
+          </div>
+          <div className="themes-stat-content">
+            <span className="themes-stat-label">Falling</span>
+            <span className="themes-stat-value">{falling}</span>
+          </div>
+        </div>
       </div>
+
+      {/* Charts */}
+      <div className="charts-row charts-row-equal themes-charts-row">
+        <TopThemesChart data={chartData} />
+        <ThemeGrowthTracker themes={themeGrowth.slice(0, 6)} />
+      </div>
+
+      {/* Browse */}
+      <div className="themes-section-header">
+        <h2 className="section-title">All Themes</h2>
+        <p className="themes-section-desc">
+          Browse, search, and filter themes by weekly momentum.
+        </p>
+      </div>
+
+      <ThemesClient themes={themeItems} />
     </div>
-    </>
   )
 }

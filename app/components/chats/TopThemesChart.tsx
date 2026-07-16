@@ -44,35 +44,40 @@ function TopThemesChart({ data }: TopThemesChartProps) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart
-          layout="vertical"
-          data={chartData}
-          margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" horizontal={false} />
-          <XAxis
-            type="number"
-            tick={{ fontSize: 11, fill: '#9CA3AF' }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            type="category"
-            dataKey="theme"
-            tick={{ fontSize: 12, fill: '#6B7280' }}
-            axisLine={false}
-            tickLine={false}
-            width={100}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(34,197,94,0.06)' }} />
-          <Bar dataKey="mentions" radius={[0, 6, 6, 0]} barSize={16}>
-            {chartData.map((entry, index) => (
-              <Cell key={entry.theme} fill={BAR_COLORS[index % BAR_COLORS.length]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="chart-body">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            layout="vertical"
+            data={chartData}
+            margin={{ top: 0, right: 12, left: 0, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" horizontal={false} />
+            <XAxis
+              type="number"
+              tick={{ fontSize: 11, fill: '#9CA3AF' }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              type="category"
+              dataKey="theme"
+              tick={{ fontSize: 11, fill: '#6B7280' }}
+              axisLine={false}
+              tickLine={false}
+              width={84}
+              tickFormatter={(value: string) =>
+                value.length > 12 ? `${value.slice(0, 11)}…` : value
+              }
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(34,197,94,0.06)' }} />
+            <Bar dataKey="mentions" radius={[0, 6, 6, 0]} barSize={16}>
+              {chartData.map((entry, index) => (
+                <Cell key={entry.theme} fill={BAR_COLORS[index % BAR_COLORS.length]} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

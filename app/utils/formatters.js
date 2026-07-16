@@ -41,5 +41,9 @@ export const sentimentClass = (sentiment) => {
  */
 export const statusClass = (status) => {
   const lower = (status || '').toLowerCase().replace(/\s+/g, '-');
+  // Map display labels + DB enums to badge classes
+  if (lower === 'new') return 'open';
+  if (lower === 'reviewed') return 'in-progress';
+  if (lower === 'actioned') return 'resolved';
   return lower; // 'open' | 'resolved' | 'in-progress'
 };

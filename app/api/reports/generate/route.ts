@@ -21,7 +21,14 @@ export async function POST(request: Request) {
     }
 
     // ── Parse body ──
-    let body: { title?: string; periodStart?: string; periodEnd?: string; status?: string } = {};
+    let body: {
+      title?: string;
+      periodStart?: string;
+      periodEnd?: string;
+      status?: string;
+      reportType?: string;
+      description?: string;
+    } = {};
     try {
       body = await request.json();
     } catch {
@@ -30,14 +37,37 @@ export async function POST(request: Request) {
 
     const title = body.title || "Voice of Customer Report";
     const status = body.status === "DRAFT" ? "DRAFT" : body.status === "SCHEDULED" ? "SCHEDULED" : "COMPLETED";
+    // Build a style key the AI layer understands (weekly / sentiment / theme / executive)
+    const styleKey = [title, body.reportType, body.description]
+      .filter(Boolean)
+      .join(" ");
 
-    const periodEnd = body.periodEnd ? new Date(body.periodEnd) : new Date();
+    // Date-only strings (YYYY-MM-DD from <input type="date">) are treated as full calendar days
+    const parsePeriodDate = (value: string, endOfDay: boolean) => {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return new Date(
+          endOfDay ? `${value}T23:59:59.999Z` : `${value}T00:00:00.000Z`
+        );
+      }
+      return new Date(value);
+    };
+
+    const periodEnd = body.periodEnd
+      ? parsePeriodDate(body.periodEnd, true)
+      : new Date();
     const periodStart = body.periodStart
-      ? new Date(body.periodStart)
+      ? parsePeriodDate(body.periodStart, false)
       : new Date(periodEnd.getTime() - 7 * 86400000);
 
     if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
       return NextResponse.json({ error: "Invalid date range format" }, { status: 400 });
+    }
+
+    if (periodStart > periodEnd) {
+      return NextResponse.json(
+        { error: "Start date must be on or before end date" },
+        { status: 400 }
+      );
     }
 
     if (status === "DRAFT" || status === "SCHEDULED") {
@@ -110,7 +140,7 @@ export async function POST(request: Request) {
     })}`;
 
     // ── Generate report ──
-    const content = await generateVoCReport(feedbackItems, periodLabel, title);
+    const content = await generateVoCReport(feedbackItems, periodLabel, styleKey || title);
 
     // ── Save to database ──
     const report = await prisma.report.create({

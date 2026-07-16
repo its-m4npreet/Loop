@@ -59,34 +59,29 @@ export default function AnalyticsHeaderClient({
   };
 
   return (
-    <div className="page-header-actions">
-      <div className="btn-secondary" style={{ display: 'flex', alignItems: 'center', padding: '0 12px', height: '38px', borderRadius: '6px' }}>
-        <Calendar size={15} style={{ marginRight: '6px', color: 'var(--color-text-muted)' }} />
+    <div className="page-header-actions analytics-header-actions">
+      <label className="btn-secondary analytics-date-select">
+        <Calendar size={15} className="analytics-date-icon" aria-hidden />
         <select
           value={activeDays}
           onChange={(e) => {
             window.location.href = `/analytics?days=${e.target.value}`;
           }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
-            fontSize: '13px',
-            fontWeight: 600,
-            color: 'var(--color-text)',
-            cursor: 'pointer',
-            padding: 0,
-            margin: 0
-          }}
+          aria-label="Date range"
         >
-          <option value="7">Last 7 Days</option>
-          <option value="30">Last 30 Days</option>
-          <option value="90">Last 90 Days</option>
+          <option value="7">7 days</option>
+          <option value="30">30 days</option>
+          <option value="90">90 days</option>
         </select>
-      </div>
-      <button className="btn-primary" id="export-btn" onClick={handleExportCSV}>
-        <Download size={15} />
-        Export CSV
+      </label>
+      <button
+        type="button"
+        className="btn-primary analytics-export-btn"
+        id="export-btn"
+        onClick={handleExportCSV}
+      >
+        <Download size={15} aria-hidden />
+        <span className="analytics-export-label">Export</span>
       </button>
     </div>
   );

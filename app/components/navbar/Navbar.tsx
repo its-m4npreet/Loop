@@ -7,6 +7,7 @@ import {
   Search,
   Bell,
   FileBarChart,
+  Upload,
   CheckCircle,
   AlertTriangle,
   FileText,
@@ -144,6 +145,17 @@ function Navbar({ collapsed, onToggleMobile, userName, userEmail, userImage }: N
             </div>
           </div>
         </div>
+
+        <Link
+          href="/import-feedback"
+          className="navbar-import-btn"
+          id="navbar-import-btn"
+          aria-label="Import Feedback"
+          title="Import Feedback"
+        >
+          <Upload size={16} />
+          <span>Import</span>
+        </Link>
 
         <Link href="/reports/generate" className="navbar-report-btn" id="navbar-report-btn">
           <FileBarChart size={16} />

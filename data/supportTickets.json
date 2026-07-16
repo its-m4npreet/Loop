@@ -1,0 +1,177 @@
+[
+  {
+    "content": "Cannot login after the latest update. Password reset email never arrives.",
+    "channel": "Support Ticket",
+    "customer_name": "Jordan Lee",
+    "rating": 1,
+    "created_at": "2026-07-01T10:12:00.000Z"
+  },
+  {
+    "content": "Billing page crashes when I try to download last month's invoice in Firefox.",
+    "channel": "Support Ticket",
+    "customer_name": "Priya Sharma",
+    "rating": 2,
+    "created_at": "2026-07-02T14:30:00.000Z"
+  },
+  {
+    "content": "Support was super helpful — resolved our SSO issue in under an hour. Thank you!",
+    "channel": "Support Ticket",
+    "customer_name": "Marcus Chen",
+    "rating": 5,
+    "created_at": "2026-07-03T09:05:00.000Z"
+  },
+  {
+    "content": "Dashboard loads very slowly when we have more than 500 feedback records.",
+    "channel": "Support Ticket",
+    "customer_name": "Elena Petrova",
+    "rating": 2,
+    "created_at": "2026-07-03T16:45:00.000Z"
+  },
+  {
+    "content": "How do I invite teammates with Analyst role? The settings page is confusing.",
+    "channel": "Support Ticket",
+    "customer_name": "Tom Williams",
+    "rating": 3,
+    "created_at": "2026-07-04T11:20:00.000Z"
+  },
+  {
+    "content": "CSV export is missing the sentiment score column. Please add it back.",
+    "channel": "Support Ticket",
+    "customer_name": "Aisha Patel",
+    "rating": 3,
+    "created_at": "2026-07-05T08:15:00.000Z"
+  },
+  {
+    "content": "We were charged twice this month and cannot find a refund option.",
+    "channel": "Support Ticket",
+    "customer_name": "David Okonkwo",
+    "rating": 1,
+    "created_at": "2026-07-05T19:40:00.000Z"
+  },
+  {
+    "content": "Love the new theme clustering — tagged our backlog accurately on first run.",
+    "channel": "Support Ticket",
+    "customer_name": "Sophie Martin",
+    "rating": 5,
+    "created_at": "2026-07-06T13:00:00.000Z"
+  },
+  {
+    "content": "Mobile app crashes when opening the feedback inbox on iOS 18.",
+    "channel": "Support Ticket",
+    "customer_name": "Liam O'Brien",
+    "rating": 1,
+    "created_at": "2026-07-07T07:55:00.000Z"
+  },
+  {
+    "content": "Notifications are too noisy. Need more granular mute options per channel.",
+    "channel": "Support Ticket",
+    "customer_name": "Mei Zhang",
+    "rating": 3,
+    "created_at": "2026-07-08T12:10:00.000Z"
+  },
+  {
+    "content": "Security concern: received another customer's notification with their data.",
+    "channel": "Support Ticket",
+    "customer_name": "Hassan Ali",
+    "rating": 1,
+    "created_at": "2026-07-08T21:30:00.000Z"
+  },
+  {
+    "content": "Integration with Slack works perfectly. Saved hours of manual reporting.",
+    "channel": "Support Ticket",
+    "customer_name": "Nina Fischer",
+    "rating": 5,
+    "created_at": "2026-07-09T10:00:00.000Z"
+  },
+  {
+    "content": "Search returns irrelevant results half the time for theme names.",
+    "channel": "Support Ticket",
+    "customer_name": "Carlos Santos",
+    "rating": 2,
+    "created_at": "2026-07-10T15:25:00.000Z"
+  },
+  {
+    "content": "Onboarding took forever — couldn't figure out how to connect our data sources.",
+    "channel": "Support Ticket",
+    "customer_name": "Amara Kofi",
+    "rating": 2,
+    "created_at": "2026-07-11T09:40:00.000Z"
+  },
+  {
+    "content": "Your API docs are excellent. Integration with our internal tools was straightforward.",
+    "channel": "Support Ticket",
+    "customer_name": "Felix Wright",
+    "rating": 5,
+    "created_at": "2026-07-11T17:05:00.000Z"
+  },
+  {
+    "content": "The charts don't update in real time. We have to refresh constantly.",
+    "channel": "Support Ticket",
+    "customer_name": "Zara Ibrahim",
+    "rating": 3,
+    "created_at": "2026-07-12T11:50:00.000Z"
+  },
+  {
+    "content": "Cannot change subscription plan from monthly to annual without contacting support.",
+    "channel": "Support Ticket",
+    "customer_name": "Ben Okafor",
+    "rating": 2,
+    "created_at": "2026-07-12T18:20:00.000Z"
+  },
+  {
+    "content": "Dark mode is fantastic — much easier on the eyes during late-night analysis.",
+    "channel": "Support Ticket",
+    "customer_name": "Yuki Tanaka",
+    "rating": 5,
+    "created_at": "2026-07-13T06:30:00.000Z"
+  },
+  {
+    "content": "Export to PDF breaks table formatting on multi-page reports.",
+    "channel": "Support Ticket",
+    "customer_name": "Nadia Petrov",
+    "rating": 2,
+    "created_at": "2026-07-13T14:15:00.000Z"
+  },
+  {
+    "content": "Role-based access control is perfect for our team structure. Great job.",
+    "channel": "Support Ticket",
+    "customer_name": "Oliver Kim",
+    "rating": 5,
+    "created_at": "2026-07-14T08:00:00.000Z"
+  },
+  {
+    "content": "We're blocked without SSO — enterprise prospect refuses to proceed without it.",
+    "channel": "Support Ticket",
+    "customer_name": "Fatima Hassan",
+    "rating": 2,
+    "created_at": "2026-07-14T16:45:00.000Z"
+  },
+  {
+    "content": "Weekly digest email is exactly what leadership needs. Very well formatted.",
+    "channel": "Support Ticket",
+    "customer_name": "Andre Silva",
+    "rating": 5,
+    "created_at": "2026-07-15T09:10:00.000Z"
+  },
+  {
+    "content": "Theme detection tagged a billing complaint as UI/UX. Accuracy needs work.",
+    "channel": "Support Ticket",
+    "customer_name": "Chen Wei",
+    "rating": 2,
+    "created_at": "2026-07-15T12:00:00.000Z"
+  },
+  {
+    "content": "Data isn't syncing properly between web and mobile apps overnight.",
+    "channel": "Support Ticket",
+    "customer_name": "Maria Rodriguez",
+    "rating": 2,
+    "created_at": "2026-07-15T15:30:00.000Z"
+  },
+  {
+    "content": "Response time from support has improved a lot this quarter. Keep it up!",
+    "channel": "Support Ticket",
+    "customer_name": "James O'Neill",
+    "rating": 4,
+    "created_at": "2026-07-15T18:00:00.000Z"
+  }
+]

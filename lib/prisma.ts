@@ -1,23 +1,40 @@
 import { PrismaClient } from "../app/generated/prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined }
+// Bump this whenever schema fields change so the dev global singleton is rebuilt.
+const PRISMA_CLIENT_VERSION = "feedback-import-v2"
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+  prismaClientVersion?: string
+}
 
 function createPrisma() {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
   return new PrismaClient({ adapter })
 }
 
-// In dev, the global cache may hold a stale client from before schema changes.
-// Invalidate it if it's missing models that the current schema defines.
+// In dev, HMR can keep a PrismaClient built from an older generated schema.
+// Drop the cache when models are missing OR when our schema version changes.
 if (process.env.NODE_ENV !== "production" && globalForPrisma.prisma) {
-  if (!("workspace" in globalForPrisma.prisma) || !("invitation" in globalForPrisma.prisma)) {
+  const missingModels =
+    !("workspace" in globalForPrisma.prisma) ||
+    !("invitation" in globalForPrisma.prisma) ||
+    !("feedback" in globalForPrisma.prisma)
+  const versionMismatch =
+    globalForPrisma.prismaClientVersion !== PRISMA_CLIENT_VERSION
+
+  if (missingModels || versionMismatch) {
+    void globalForPrisma.prisma.$disconnect().catch(() => {})
     globalForPrisma.prisma = undefined
   }
 }
 
 export const prisma = globalForPrisma.prisma ?? createPrisma()
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma
+  globalForPrisma.prismaClientVersion = PRISMA_CLIENT_VERSION
+}
 
 export * from "../app/generated/prisma/client"
