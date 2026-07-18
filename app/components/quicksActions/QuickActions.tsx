@@ -48,8 +48,8 @@ function QuickActions() {
     setPanelOpen(false);
   }, [pathname]);
 
-  // Hide entirely while generating a report
-  if (isGenerateReport) {
+  // Hide entirely while generating a report or on the Ask LOOP page
+  if (isGenerateReport || pathname === '/ask-loop') {
     return null;
   }
 
