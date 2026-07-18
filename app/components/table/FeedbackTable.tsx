@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Search,
   ChevronUp,
@@ -137,10 +137,51 @@ function FeedbackTable({
   }, [filtered, sortConfig]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  // Keep page in range when filters shrink the result set
+  const safePage = Math.min(currentPage, totalPages);
   const paginated = sorted.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE
   );
+
+  /**
+   * Compact page list so small viewports don't wrap 1…N buttons.
+   * Examples: [1,2,3,4,5] or [1,'…',4,5,6,'…',12]
+   */
+  const pageItems = useMemo((): Array<number | 'ellipsis'> => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const pages = new Set<number>([1, totalPages, safePage]);
+    if (safePage - 1 > 1) pages.add(safePage - 1);
+    if (safePage + 1 < totalPages) pages.add(safePage + 1);
+
+    // Near the start/end, show a fuller run of pages instead of sparse holes
+    if (safePage <= 3) {
+      pages.add(2);
+      pages.add(3);
+      pages.add(4);
+    }
+    if (safePage >= totalPages - 2) {
+      pages.add(totalPages - 1);
+      pages.add(totalPages - 2);
+      pages.add(totalPages - 3);
+    }
+
+    const sortedPages = Array.from(pages)
+      .filter((n) => n >= 1 && n <= totalPages)
+      .sort((a, b) => a - b);
+
+    const items: Array<number | 'ellipsis'> = [];
+    for (let i = 0; i < sortedPages.length; i++) {
+      if (i > 0 && sortedPages[i] - sortedPages[i - 1] > 1) {
+        items.push('ellipsis');
+      }
+      items.push(sortedPages[i]);
+    }
+    return items;
+  }, [totalPages, safePage]);
 
   function handleSort(key: string) {
     setSortConfig((prev) => ({
@@ -166,7 +207,9 @@ function FeedbackTable({
     setCurrentPage(1);
   }
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
   return (
     <div className="feedback-table-wrapper">
@@ -364,41 +407,47 @@ function FeedbackTable({
         <p className="table-page-info">
           Showing{' '}
           <strong>
-            {sorted.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}–
-            {Math.min(currentPage * PAGE_SIZE, sorted.length)}
+            {sorted.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}–
+            {Math.min(safePage * PAGE_SIZE, sorted.length)}
           </strong>{' '}
           of <strong>{sorted.length}</strong> entries
         </p>
 
-        <div className="pagination-controls">
+        <div className="pagination-controls" role="navigation" aria-label="Pagination">
           <button
             type="button"
             className="pagination-btn"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
+            disabled={safePage === 1}
             aria-label="Previous page"
           >
             <ChevronLeft size={14} />
           </button>
 
-          {pageNumbers.map((num) => (
-            <button
-              type="button"
-              key={num}
-              className={`pagination-btn ${currentPage === num ? 'active' : ''}`}
-              onClick={() => setCurrentPage(num)}
-              aria-label={`Page ${num}`}
-              aria-current={currentPage === num ? 'page' : undefined}
-            >
-              {num}
-            </button>
-          ))}
+          {pageItems.map((item, idx) =>
+            item === 'ellipsis' ? (
+              <span key={`e-${idx}`} className="pagination-ellipsis" aria-hidden>
+                …
+              </span>
+            ) : (
+              <button
+                type="button"
+                key={item}
+                className={`pagination-btn ${safePage === item ? 'active' : ''}`}
+                onClick={() => setCurrentPage(item)}
+                aria-label={`Page ${item}`}
+                aria-current={safePage === item ? 'page' : undefined}
+              >
+                {item}
+              </button>
+            )
+          )}
 
           <button
             type="button"
             className="pagination-btn"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
+            disabled={safePage === totalPages}
             aria-label="Next page"
           >
             <ChevronRight size={14} />
