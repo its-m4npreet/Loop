@@ -38,7 +38,7 @@ function getGeminiModel() {
     throw new Error("GEMINI_API_KEY environment variable is not set")
   }
   const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
+  return genAI.getGenerativeModel({ model: "gemini-3.5-flash" })
 }
 
 // ── Lightweight NL -> filter extraction ──
@@ -232,7 +232,7 @@ const SYSTEM_PREAMBLE = `You are LOOP AI, an assistant embedded in a Voice-of-Cu
 Rules:
 - Ground every claim in the provided data. Never invent statistics, quotes, or feedback that isn't shown.
 - If the snapshot doesn't have enough to answer confidently, say so plainly and suggest what data or filter would help.
-- Be concise and conversational. Use short paragraphs or a tight bullet list, not long reports.
+- Be concise and conversational. Use short paragraphs, markdown headings (## / ###), and tight bullet (- ) or numbered (1. ) lists — not long reports.
 - When citing a specific piece of feedback, paraphrase it briefly rather than quoting it at length.
 - Do not repeat the raw data dump back verbatim — synthesize it into an answer.`
 

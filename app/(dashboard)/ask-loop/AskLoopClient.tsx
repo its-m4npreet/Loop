@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  Zap,
+  Infinity as LoopMark,
   Sparkles,
   TrendingUp,
   AlertTriangle,
@@ -10,9 +10,9 @@ import {
   Send,
   Plus,
   MessageSquare,
+  History,
   Trash2,
   Loader2,
-  Menu,
   X,
 } from 'lucide-react'
 
@@ -46,58 +46,147 @@ function nextLocalId(): string {
   return `local-${Date.now()}-${localIdCounter}`
 }
 
-/** Very light inline formatting: turns **bold** segments into <strong>. */
+/**
+ * Inline markdown: **bold**, *italic*, `code`.
+ * Order matters so **bold** is matched before single-asterisk italic.
+ */
 function formatInline(text: string): React.ReactNode[] {
-  return text
-    .split(/(\*\*[^*]+\*\*)/g)
-    .filter(Boolean)
-    .map((part, i) =>
-      part.startsWith('**') && part.endsWith('**') ? (
-        <strong key={i}>{part.slice(2, -2)}</strong>
-      ) : (
-        <React.Fragment key={i}>{part}</React.Fragment>
+  const nodes: React.ReactNode[] = []
+  const re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g
+  let last = 0
+  let match: RegExpExecArray | null
+  let key = 0
+
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > last) {
+      nodes.push(<React.Fragment key={key++}>{text.slice(last, match.index)}</React.Fragment>)
+    }
+    const token = match[0]
+    if (token.startsWith('**') && token.endsWith('**')) {
+      nodes.push(<strong key={key++}>{token.slice(2, -2)}</strong>)
+    } else if (token.startsWith('`') && token.endsWith('`')) {
+      nodes.push(
+        <code key={key++} className="ask-loop-inline-code">
+          {token.slice(1, -1)}
+        </code>
       )
-    )
+    } else if (token.startsWith('*') && token.endsWith('*')) {
+      nodes.push(<em key={key++}>{token.slice(1, -1)}</em>)
+    } else {
+      nodes.push(<React.Fragment key={key++}>{token}</React.Fragment>)
+    }
+    last = match.index + token.length
+  }
+
+  if (last < text.length) {
+    nodes.push(<React.Fragment key={key++}>{text.slice(last)}</React.Fragment>)
+  }
+
+  return nodes.length > 0 ? nodes : [text]
 }
 
-const BULLET_PATTERN = /^\s*[-•]\s+(.*)$/
+const HEADING_PATTERN = /^\s*(#{1,3})\s+(.+)$/
+const BULLET_PATTERN = /^\s*[-*•]\s+(.+)$/
+const NUMBERED_PATTERN = /^\s*\d+[.)]\s+(.+)$/
 
-/** Renders plain text into paragraphs, grouping consecutive "- " lines into a <ul>. */
+type ListBuffer =
+  | { kind: 'ul'; items: string[] }
+  | { kind: 'ol'; items: string[] }
+  | null
+
+/**
+ * Renders assistant answers with lightweight markdown:
+ * headings, bullet/numbered lists, bold, italic, inline code.
+ */
 function AnswerContent({ text }: { text: string }) {
-  const lines = text.split('\n').filter((l) => l.trim().length > 0)
+  const lines = text.split('\n')
   const blocks: React.ReactNode[] = []
-  let bulletBuffer: string[] = []
+  let listBuffer: ListBuffer = null
 
-  const flushBullets = () => {
-    if (bulletBuffer.length === 0) return
-    blocks.push(
-      <ul key={`ul-${blocks.length}`} className="ask-loop-bullet-list">
-        {bulletBuffer.map((item, i) => (
-          <li key={i} className="ask-loop-bullet">
-            {formatInline(item)}
-          </li>
-        ))}
-      </ul>
-    )
-    bulletBuffer = []
-  }
-
-  for (const line of lines) {
-    const bulletMatch = BULLET_PATTERN.exec(line)
-    if (bulletMatch) {
-      bulletBuffer.push(bulletMatch[1])
-    } else {
-      flushBullets()
+  const flushList = () => {
+    if (!listBuffer || listBuffer.items.length === 0) {
+      listBuffer = null
+      return
+    }
+    const listKey = `list-${blocks.length}`
+    if (listBuffer.kind === 'ul') {
       blocks.push(
-        <p key={blocks.length} className="ask-loop-line">
-          {formatInline(line)}
-        </p>
+        <ul key={listKey} className="ask-loop-list ask-loop-bullet-list">
+          {listBuffer.items.map((item, i) => (
+            <li key={i} className="ask-loop-list-item">
+              {formatInline(item)}
+            </li>
+          ))}
+        </ul>
+      )
+    } else {
+      blocks.push(
+        <ol key={listKey} className="ask-loop-list ask-loop-number-list">
+          {listBuffer.items.map((item, i) => (
+            <li key={i} className="ask-loop-list-item">
+              {formatInline(item)}
+            </li>
+          ))}
+        </ol>
       )
     }
+    listBuffer = null
   }
-  flushBullets()
 
-  return <>{blocks}</>
+  const pushListItem = (kind: 'ul' | 'ol', item: string) => {
+    if (!listBuffer || listBuffer.kind !== kind) {
+      flushList()
+      listBuffer = { kind, items: [item] }
+    } else {
+      listBuffer.items.push(item)
+    }
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\r$/, '')
+    const trimmed = line.trim()
+
+    // Blank line = paragraph break between blocks
+    if (!trimmed) {
+      flushList()
+      continue
+    }
+
+    const headingMatch = HEADING_PATTERN.exec(trimmed)
+    if (headingMatch) {
+      flushList()
+      const level = headingMatch[1].length
+      const Tag = (`h${level}` as 'h1' | 'h2' | 'h3')
+      blocks.push(
+        <Tag key={`h-${blocks.length}`} className={`ask-loop-heading ask-loop-heading-${level}`}>
+          {formatInline(headingMatch[2])}
+        </Tag>
+      )
+      continue
+    }
+
+    const bulletMatch = BULLET_PATTERN.exec(line)
+    if (bulletMatch) {
+      pushListItem('ul', bulletMatch[1])
+      continue
+    }
+
+    const numberedMatch = NUMBERED_PATTERN.exec(line)
+    if (numberedMatch) {
+      pushListItem('ol', numberedMatch[1])
+      continue
+    }
+
+    flushList()
+    blocks.push(
+      <p key={`p-${blocks.length}`} className="ask-loop-line">
+        {formatInline(trimmed)}
+      </p>
+    )
+  }
+  flushList()
+
+  return <div className="ask-loop-answer">{blocks}</div>
 }
 
 export default function AskLoopClient({ initialConversations }: AskLoopClientProps) {
@@ -117,6 +206,20 @@ export default function AskLoopClient({ initialConversations }: AskLoopClientPro
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  useEffect(() => {
+    if (!isHistoryOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsHistoryOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [isHistoryOpen])
+
   const startNewChat = useCallback(() => {
     setActiveConversationId(null)
     conversationIdRef.current = null
@@ -126,9 +229,13 @@ export default function AskLoopClient({ initialConversations }: AskLoopClientPro
   }, [])
 
   const loadConversation = useCallback(async (id: string) => {
-    if (id === activeConversationId) return
+    if (id === activeConversationId) {
+      setIsHistoryOpen(false)
+      return
+    }
     setIsSwitching(true)
     setError('')
+    setIsHistoryOpen(false)
     try {
       const res = await fetch(`/api/ask-loop/conversations/${id}`)
       const data = await res.json()
@@ -143,7 +250,6 @@ export default function AskLoopClient({ initialConversations }: AskLoopClientPro
           (m) => ({ id: m.id, role: m.role, content: m.content })
         )
       )
-      setIsHistoryOpen(false)
     } catch {
       setError('A network error occurred while loading that conversation.')
     } finally {
@@ -260,90 +366,65 @@ export default function AskLoopClient({ initialConversations }: AskLoopClientPro
 
   const showWelcome = messages.length === 0 && !isSwitching
 
+  const formatHistoryDate = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    } catch {
+      return ''
+    }
+  }
+
   return (
     <div className="ask-loop-layout">
-      {isHistoryOpen && (
-        <div
-          className="ask-loop-sidebar-backdrop"
-          onClick={() => setIsHistoryOpen(false)}
-        />
-      )}
-
-      <aside className={`ask-loop-sidebar${isHistoryOpen ? ' open' : ''}`}>
-        <div className="ask-loop-sidebar-header">
-          <span className="ask-loop-sidebar-title">Conversations</span>
+      <div className="ask-loop-toolbar">
+        <div className="ask-loop-toolbar-brand">
+          <span className="ask-loop-brand-mark" aria-hidden>
+            <LoopMark size={16} strokeWidth={2.5} />
+          </span>
+          <span>Ask LOOP</span>
+        </div>
+        <div className="ask-loop-toolbar-actions">
           <button
             type="button"
-            className="ask-loop-sidebar-close"
-            onClick={() => setIsHistoryOpen(false)}
-            aria-label="Close history"
+            className="ask-loop-toolbar-btn ask-loop-toolbar-btn-primary"
+            onClick={startNewChat}
+            disabled={isStreaming || (showWelcome && !activeConversationId)}
           >
-            <X size={16} />
+            <Plus size={16} />
+            <span>New chat</span>
+          </button>
+          <button
+            type="button"
+            className="ask-loop-toolbar-btn"
+            onClick={() => setIsHistoryOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={isHistoryOpen}
+          >
+            <History size={16} />
+            <span>History</span>
+            {conversations.length > 0 && (
+              <span className="ask-loop-toolbar-count">{conversations.length}</span>
+            )}
           </button>
         </div>
-
-        <button type="button" className="ask-loop-new-chat-btn" onClick={startNewChat}>
-          <Plus size={16} />
-          New chat
-        </button>
-
-        <div className="ask-loop-history-list">
-          {conversations.length === 0 && (
-            <p className="ask-loop-history-empty">No past conversations yet.</p>
-          )}
-          {conversations.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`ask-loop-history-item${c.id === activeConversationId ? ' active' : ''}`}
-              onClick={() => void loadConversation(c.id)}
-            >
-              <MessageSquare size={14} className="ask-loop-history-icon" />
-              <span className="ask-loop-history-title">{c.title}</span>
-              <span
-                className="ask-loop-history-delete"
-                role="button"
-                tabIndex={0}
-                aria-label="Delete conversation"
-                onClick={(e) => void deleteConversation(c.id, e)}
-              >
-                <Trash2 size={13} />
-              </span>
-            </button>
-          ))}
-        </div>
-      </aside>
+      </div>
 
       <div className="ask-loop-main">
-        <div className="ask-loop-mobile-header">
-          <button
-            type="button"
-            className="ask-loop-toggle-hist"
-            onClick={() => setIsHistoryOpen(true)}
-            aria-label="Toggle history"
-          >
-            <Menu size={18} />
-            <span>History</span>
-          </button>
-          <div className="ask-loop-mobile-logo">
-            <Zap size={14} className="ask-loop-logo-icon" />
-            <span>LOOP AI</span>
-          </div>
-          <button
-            type="button"
-            className="ask-loop-mobile-new-chat"
-            onClick={startNewChat}
-            aria-label="Start new chat"
-          >
-            <Plus size={18} />
-          </button>
-        </div>
-
         <div className="ask-loop-chat">
           {showWelcome ? (
             <div className="ask-loop-welcome">
-              <div className="ask-loop-avatar">
-                <Zap size={24} />
+              <div className="ask-loop-hero-logo" aria-hidden>
+                <div className="ask-loop-hero-logo-ring">
+                  <div className="ask-loop-hero-logo-mark">
+                    <LoopMark size={36} strokeWidth={2.5} />
+                  </div>
+                </div>
+                <span className="ask-loop-hero-logo-wordmark">LOOP</span>
               </div>
               <h2 className="ask-loop-greeting">Hello! I&apos;m LOOP AI</h2>
               <p className="ask-loop-desc">Ask me anything about your feedback data. Here are some suggestions:</p>
@@ -375,7 +456,7 @@ export default function AskLoopClient({ initialConversations }: AskLoopClientPro
                   <div key={m.id} className={`ask-loop-msg ask-loop-msg-${m.role.toLowerCase()}`}>
                     {m.role === 'ASSISTANT' && (
                       <div className="ask-loop-msg-avatar">
-                        <Zap size={14} />
+                        <LoopMark size={14} strokeWidth={2.5} />
                       </div>
                     )}
                     <div className="ask-loop-msg-bubble">
@@ -422,6 +503,79 @@ export default function AskLoopClient({ initialConversations }: AskLoopClientPro
           </form>
         </div>
       </div>
+
+      {isHistoryOpen && (
+        <div
+          className="ask-loop-modal-backdrop"
+          onClick={() => setIsHistoryOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="ask-loop-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ask-loop-history-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="ask-loop-modal-header">
+              <div>
+                <h2 id="ask-loop-history-title" className="ask-loop-modal-title">
+                  Chat history
+                </h2>
+                <p className="ask-loop-modal-subtitle">
+                  {conversations.length === 0
+                    ? 'No past conversations yet'
+                    : `${conversations.length} conversation${conversations.length === 1 ? '' : 's'}`}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="ask-loop-modal-close"
+                onClick={() => setIsHistoryOpen(false)}
+                aria-label="Close history"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="ask-loop-history-list">
+              {conversations.length === 0 ? (
+                <div className="ask-loop-history-empty">
+                  <MessageSquare size={28} />
+                  <p>Start a chat and it will show up here.</p>
+                </div>
+              ) : (
+                conversations.map((c) => (
+                  <div
+                    key={c.id}
+                    className={`ask-loop-history-item${c.id === activeConversationId ? ' active' : ''}`}
+                  >
+                    <button
+                      type="button"
+                      className="ask-loop-history-item-main"
+                      onClick={() => void loadConversation(c.id)}
+                    >
+                      <MessageSquare size={16} className="ask-loop-history-icon" />
+                      <span className="ask-loop-history-text">
+                        <span className="ask-loop-history-title">{c.title}</span>
+                        <span className="ask-loop-history-date">{formatHistoryDate(c.updatedAt)}</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="ask-loop-history-delete"
+                      aria-label="Delete conversation"
+                      onClick={(e) => void deleteConversation(c.id, e)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
