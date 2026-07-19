@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { withRetry } from "@/lib/geminiRetry"
 
 export type SentimentLabel = "POSITIVE" | "NEUTRAL" | "NEGATIVE"
 
@@ -141,7 +142,7 @@ ${options?.rating != null ? `Rating: ${options.rating}/5` : ""}
 Feedback: """${content.slice(0, 2000)}"""`
 
   try {
-    const result = await model.generateContent(prompt)
+    const result = await withRetry(() => model.generateContent(prompt))
     const text = result.response.text()
     const cleaned = text.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim()
     const parsed = JSON.parse(cleaned) as {

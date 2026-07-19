@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireWorkspaceUser } from "@/lib/workspaceAuth"
+import { InboxQuerySchema } from "@/lib/validations"
 
 const SENTIMENT_LABEL: Record<string, string> = {
   POSITIVE: "Positive",
@@ -32,8 +33,15 @@ export async function GET(request: NextRequest) {
 
   const { workspaceId } = authResult.user
   const { searchParams } = new URL(request.url)
-  const skip = Math.max(0, parseInt(searchParams.get("skip") || "0", 10))
-  const take = Math.min(100, Math.max(1, parseInt(searchParams.get("take") || "10", 10)))
+
+  const queryResult = InboxQuerySchema.safeParse({
+    skip: searchParams.get("skip") ?? undefined,
+    take: searchParams.get("take") ?? undefined,
+  })
+
+  const { skip, take } = queryResult.success
+    ? queryResult.data
+    : { skip: 0, take: 10 }
 
   const [rows, total] = await Promise.all([
     prisma.feedback.findMany({

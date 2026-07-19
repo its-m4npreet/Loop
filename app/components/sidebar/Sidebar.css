@@ -298,6 +298,7 @@
     transform: translateX(-100%);
     width: var(--sidebar-width) !important;
     z-index: 300;
+    overflow-y: auto;
   }
 
   .sidebar.mobile-open {
@@ -310,6 +311,10 @@
 
   .sidebar-collapse-btn {
     display: none;
+  }
+
+  .sidebar-nav {
+    flex: none;
   }
 }
 

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { ProfileUpdateSchema, parseBody } from "@/lib/validations"
 
 export async function PATCH(req: Request) {
   const session = await auth()
@@ -8,21 +9,14 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const body = await req.json()
-  const { name } = body as { name?: string }
+  const result = await parseBody(req, ProfileUpdateSchema)
+  if ("error" in result) return result.error
 
-  if (!name || typeof name !== "string" || name.trim().length === 0) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 })
-  }
-
-  const trimmed = name.trim()
-  if (trimmed.length > 100) {
-    return NextResponse.json({ error: "Name too long" }, { status: 400 })
-  }
+  const { name } = result.data
 
   const updated = await prisma.user.update({
     where: { id: session.user.id },
-    data: { name: trimmed },
+    data: { name },
     select: { name: true },
   })
 

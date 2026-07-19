@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { CreateWorkspaceSchema, parseBody } from "@/lib/validations"
 
 function slugify(text: string): string {
   return text
@@ -59,13 +60,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Already part of a workspace" }, { status: 400 })
   }
 
-  const { companyName } = await req.json()
+  const result = await parseBody(req, CreateWorkspaceSchema)
+  if ("error" in result) return result.error
 
-  if (!companyName || typeof companyName !== "string" || companyName.trim().length < 2) {
-    return NextResponse.json({ error: "Company name is required" }, { status: 400 })
-  }
-
-  const trimmed = companyName.trim()
+  const { companyName: trimmed } = result.data
   const workspaceName = `${trimmed} Workspace`
 
   let workspaceId = generateWorkspaceId(trimmed)

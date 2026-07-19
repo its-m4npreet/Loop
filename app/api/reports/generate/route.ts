@@ -3,10 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { generateVoCReport } from "@/lib/ai";
 import { NextResponse } from "next/server";
 import type { FeedbackItem } from "@/lib/ai";
+import { GenerateReportSchema, parseBody } from "@/lib/validations";
+
+function parsePeriodDate(value: string, endOfDay: boolean) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return new Date(
+      endOfDay ? `${value}T23:59:59.999Z` : `${value}T00:00:00.000Z`
+    );
+  }
+  return new Date(value);
+}
 
 export async function POST(request: Request) {
   try {
-    // ── Auth ──
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,55 +29,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No workspace" }, { status: 400 });
     }
 
-    // ── Parse body ──
-    let body: {
-      title?: string;
-      periodStart?: string;
-      periodEnd?: string;
-      status?: string;
-      reportType?: string;
-      description?: string;
-    } = {};
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
+    const result = await parseBody(request, GenerateReportSchema);
+    if ("error" in result) return result.error;
 
-    const title = body.title || "Voice of Customer Report";
-    const status = body.status === "DRAFT" ? "DRAFT" : body.status === "SCHEDULED" ? "SCHEDULED" : "COMPLETED";
-    // Build a style key the AI layer understands (weekly / sentiment / theme / executive)
-    const styleKey = [title, body.reportType, body.description]
+    const { title, periodStart: psRaw, periodEnd: peRaw, status, reportType, description } = result.data;
+
+    const styleKey = [title, reportType, description]
       .filter(Boolean)
       .join(" ");
 
-    // Date-only strings (YYYY-MM-DD from <input type="date">) are treated as full calendar days
-    const parsePeriodDate = (value: string, endOfDay: boolean) => {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        return new Date(
-          endOfDay ? `${value}T23:59:59.999Z` : `${value}T00:00:00.000Z`
-        );
-      }
-      return new Date(value);
-    };
-
-    const periodEnd = body.periodEnd
-      ? parsePeriodDate(body.periodEnd, true)
-      : new Date();
-    const periodStart = body.periodStart
-      ? parsePeriodDate(body.periodStart, false)
+    const periodEnd = peRaw ? parsePeriodDate(peRaw, true) : new Date();
+    const periodStart = psRaw
+      ? parsePeriodDate(psRaw, false)
       : new Date(periodEnd.getTime() - 7 * 86400000);
-
-    if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
-      return NextResponse.json({ error: "Invalid date range format" }, { status: 400 });
-    }
-
-    if (periodStart > periodEnd) {
-      return NextResponse.json(
-        { error: "Start date must be on or before end date" },
-        { status: 400 }
-      );
-    }
 
     if (status === "DRAFT" || status === "SCHEDULED") {
       const report = await prisma.report.create({
@@ -100,7 +73,6 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── Fetch feedback for the period ──
     const feedback = await prisma.feedback.findMany({
       where: {
         workspaceId: user.workspaceId,
@@ -121,7 +93,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // ── Transform for AI ──
     const feedbackItems: FeedbackItem[] = feedback.map((f) => ({
       content: f.content,
       sentiment: f.sentiment,
@@ -139,10 +110,8 @@ export async function POST(request: Request) {
       year: "numeric",
     })}`;
 
-    // ── Generate report ──
     const content = await generateVoCReport(feedbackItems, periodLabel, styleKey || title);
 
-    // ── Save to database ──
     const report = await prisma.report.create({
       data: {
         title,

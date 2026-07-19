@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import crypto from "crypto"
 import { sendInviteEmail } from "@/lib/mail"
-import { Role, ALL_ROLES } from "@/lib/permissions"
+import { Role } from "@/lib/permissions"
+import { InviteMemberSchema, parseBody } from "@/lib/validations"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -24,17 +25,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No workspace" }, { status: 400 })
   }
 
-  const body = await req.json()
-  const { email, name, role } = body as { email?: string; name?: string; role?: string }
+  const result = await parseBody(req, InviteMemberSchema)
+  if ("error" in result) return result.error
 
-  if (!email || typeof email !== "string") {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 })
-  }
-
-  const trimmedEmail = email.trim().toLowerCase()
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-    return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
-  }
+  const { email: trimmedEmail, name, role } = result.data
 
   const existingUser = await prisma.user.findUnique({
     where: { email: trimmedEmail },
@@ -55,7 +49,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "An active invitation already exists for this email" }, { status: 409 })
   }
 
-  const assignedRole: Role = ALL_ROLES.includes(role as Role) ? (role as Role) : "VIEWER"
+  const assignedRole: Role = role as Role
 
   const token = crypto.randomBytes(32).toString("hex")
   const expiresAt = new Date()
@@ -64,7 +58,7 @@ export async function POST(req: Request) {
   const invitation = await prisma.invitation.create({
     data: {
       email: trimmedEmail,
-      name: name?.trim() || null,
+      name,
       role: assignedRole,
       token,
       workspaceId: currentUser.workspaceId,
@@ -87,7 +81,7 @@ export async function POST(req: Request) {
   try {
     await sendInviteEmail({
       to: trimmedEmail,
-      name: name?.trim() || trimmedEmail.split("@")[0],
+      name: name || trimmedEmail.split("@")[0],
       role: assignedRole,
       inviteUrl,
       invitedByName: currentUser.name || "Someone",

@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server"
 import { hash } from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { RegisterSchema, parseBody } from "@/lib/validations"
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json()
+    const result = await parseBody(req, RegisterSchema)
+    if ("error" in result) return result.error
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email and password are required" },
-        { status: 400 }
-      )
-    }
+    const { name, email, password } = result.data
 
     const existing = await prisma.user.findUnique({ where: { email } })
 
