@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { Tag, TrendingUp, TrendingDown, MessageSquare } from 'lucide-react'
+import Link from 'next/link'
 
 import TopThemesChart from '../../components/chats/TopThemesChart'
 import ThemeGrowthTracker from '../../components/chats/ThemeGrowthTracker'
@@ -43,26 +44,20 @@ export default async function ThemesPage() {
   })
   if (!user) redirect('/api/auth')
 
-  if (!user.workspaceId) {
-    return (
-      <div className="themes-page">
-        <div className="page-header themes-page-header">
-          <div className="themes-page-header-text">
-            <h1 className="page-title">Themes</h1>
-            <p className="page-subtitle">
-              You are not part of a workspace yet.
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const hasWorkspace = !!user.workspaceId
+  const workspaceId = user.workspaceId ?? ''
 
-  const [themes, topThemes, themeGrowth] = await Promise.all([
-    getThemesForWorkspace(user.workspaceId),
-    getTopThemes(user.workspaceId, 8),
-    getThemeGrowthOverTime(user.workspaceId, 8),
-  ])
+  let themes: Awaited<ReturnType<typeof getThemesForWorkspace>> = []
+  let topThemes: Awaited<ReturnType<typeof getTopThemes>> = []
+  let themeGrowth: Awaited<ReturnType<typeof getThemeGrowthOverTime>> = []
+
+  if (hasWorkspace) {
+    ;[themes, topThemes, themeGrowth] = await Promise.all([
+      getThemesForWorkspace(workspaceId),
+      getTopThemes(workspaceId, 8),
+      getThemeGrowthOverTime(workspaceId, 8),
+    ])
+  }
 
   const themeItems = themes.map(toThemeItem)
   const totalMentions = themes.reduce((s, t) => s + t.mentions, 0)
@@ -84,6 +79,13 @@ export default async function ThemesPage() {
           </p>
         </div>
       </div>
+
+      {!hasWorkspace && (
+        <div className="workspace-nudge">
+          <span>Create or join a workspace to start tracking themes.</span>
+          <Link href="/workspace">Go to Workspace</Link>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="themes-stats-grid">
