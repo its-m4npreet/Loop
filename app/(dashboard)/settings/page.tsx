@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import SettingsClient from './SettingsClient'
+import DeleteAccount from '../profile/DeleteAccount'
 import './page.css'
 
 export default async function SettingsPage() {
@@ -99,9 +100,7 @@ export default async function SettingsPage() {
                 </div>
               </div>
               <div className="settings-item-right">
-                <button type="button" className="settings-item-btn danger">
-                  Delete
-                </button>
+                <DeleteAccount />
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { Shield, Calendar, Clock, FolderOpen } from 'lucide-react'
 import ProfileAvatar from "./ProfileAvatar"
 import ProfileEditor from "./ProfileEditor"
+import DeleteAccount from "./DeleteAccount"
 
 import './page.css'
 
@@ -182,7 +183,7 @@ export default async function ProfilePage() {
                   <div className="settings-item-label">Delete account</div>
                   <div className="settings-item-desc">Permanently delete your account and all associated data</div>
                 </div>
-                <button className="settings-item-btn danger">Delete</button>
+                <DeleteAccount />
               </div>
             </div>
           </div>

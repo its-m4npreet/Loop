@@ -61,16 +61,16 @@ function TopThemesChart({ data }: TopThemesChartProps) {
             <YAxis
               type="category"
               dataKey="theme"
-              tick={{ fontSize: 11, fill: '#6B7280' }}
+              tick={{ fontSize: 12, fill: '#374151', fontWeight: 500 }}
               axisLine={false}
               tickLine={false}
-              width={84}
+              width={130}
               tickFormatter={(value: string) =>
-                value.length > 12 ? `${value.slice(0, 11)}…` : value
+                value.length > 16 ? `${value.slice(0, 15)}…` : value
               }
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(34,197,94,0.06)' }} />
-            <Bar dataKey="mentions" radius={[0, 6, 6, 0]} barSize={16}>
+            <Bar dataKey="mentions" radius={[0, 6, 6, 0]} barSize={18}>
               {chartData.map((entry, index) => (
                 <Cell key={entry.theme} fill={BAR_COLORS[index % BAR_COLORS.length]} />
               ))}

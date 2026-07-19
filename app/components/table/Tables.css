@@ -457,27 +457,20 @@
     border-bottom: none;
   }
 
-  .feedback-card-top {
+  .feedback-card-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: var(--space-3);
+    gap: var(--space-2);
     min-width: 0;
   }
 
-  .feedback-card-top .customer-cell {
+  .feedback-card-header .customer-cell {
     min-width: 0;
     flex: 1 1 auto;
   }
 
-  .feedback-card-customer-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-  }
-
-  .feedback-card-customer-meta .customer-name {
+  .feedback-card-header .customer-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -486,25 +479,33 @@
   .feedback-card-time {
     font-size: 11px;
     color: var(--color-text-light);
-  }
-
-  .feedback-card-badges {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
+    white-space: nowrap;
     flex-shrink: 0;
   }
 
   .feedback-card-text {
     margin: 0;
     font-size: 13px;
-    line-height: 1.45;
-    color: var(--color-text-muted);
+    line-height: 1.5;
+    color: var(--color-text);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    word-break: break-word;
+  }
+
+  .feedback-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .feedback-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
   }
 
   .feedback-card-footer {
@@ -619,7 +620,7 @@
   }
 
   .feedback-card-badges {
-    gap: 3px;
+    gap: 4px;
   }
 
   .sentiment-badge,
@@ -675,4 +676,79 @@
 .table-empty p {
   font-size: 14px;
   margin-top: var(--space-3);
+}
+
+/* ── Skeleton loading ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.skeleton-row td {
+  padding: 12px var(--space-4);
+}
+
+.skeleton-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.skeleton-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-name {
+  width: 90px;
+}
+
+.skeleton-feedback {
+  width: 100%;
+  max-width: 260px;
+  height: 14px;
+}
+
+.skeleton-badge {
+  width: 64px;
+  height: 22px;
+  border-radius: var(--radius-full);
+}
+
+.skeleton-text {
+  width: 70px;
+}
+
+.skeleton-time {
+  width: 50px;
+}
+
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton-card .skeleton-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.skeleton-card .skeleton-feedback {
+  height: 14px;
+  max-width: 100%;
+}
+
+.infinite-scroll-sentinel {
+  height: 1px;
+  width: 100%;
 }
