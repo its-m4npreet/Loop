@@ -48,29 +48,46 @@ export function FAQ() {
             return (
               <div
                 key={faq.question}
-                className="rounded-xl border border-slate-200 bg-white"
+                className={`rounded-xl border bg-white transition-colors duration-300 ease-out ${
+                  isOpen
+                    ? "border-slate-300 shadow-sm"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
               >
                 <button
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? -1 : index)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left"
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
                 >
                   <span className="text-sm font-semibold text-slate-900 sm:text-base">
                     {faq.question}
                   </span>
                   <ChevronDown
-                    className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${
-                      isOpen ? "rotate-180" : ""
+                    className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-300 ease-out ${
+                      isOpen ? "rotate-180 text-loop-green" : ""
                     }`}
                   />
                 </button>
-                {isOpen && (
-                  <div className="border-t border-slate-100 px-5 pb-4">
-                    <p className="pt-3 text-sm leading-relaxed text-slate-600">
-                      {faq.answer}
-                    </p>
+
+                {/* Smooth expand/collapse via grid-rows (0fr → 1fr) */}
+                <div
+                  className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div
+                      className={`border-t border-slate-100 px-5 transition-opacity duration-300 ease-out ${
+                        isOpen ? "opacity-100" : "opacity-0"
+                      }`}
+                    >
+                      <p className="pt-3 pb-4 text-sm leading-relaxed text-slate-600">
+                        {faq.answer}
+                      </p>
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             )
           })}

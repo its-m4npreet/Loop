@@ -12,16 +12,16 @@ const footerLinks = {
 export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-5">
-          <div className="lg:col-span-1">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:grid-cols-5">
+          <div className="col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2">
               <Infinity className="h-7 w-7 text-loop-green" strokeWidth={2.5} />
               <span className="text-lg font-bold tracking-tight text-slate-900">
                 LOOP
               </span>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-slate-500">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-500">
               AI customer feedback intelligence for product teams that ship.
             </p>
             <div className="mt-5 flex gap-3">
@@ -43,7 +43,7 @@ export function Footer() {
           </div>
 
           {Object.entries(footerLinks).map(([heading, links]) => (
-            <div key={heading}>
+            <div key={heading} className="min-w-0">
               <h3 className="text-xs font-bold tracking-wider text-slate-900 uppercase">
                 {heading}
               </h3>
@@ -63,11 +63,11 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-8 sm:flex-row">
-          <p className="text-sm text-slate-400">
+        <div className="mt-12 grid grid-cols-1 gap-3 border-t border-slate-200 pt-8 text-center sm:grid-cols-2 sm:text-left">
+          <p className="text-sm text-slate-400 sm:text-left">
             © 2026 LOOP, Inc. All rights reserved.
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-400 sm:text-right">
             Made for product teams worldwide.
           </p>
         </div>

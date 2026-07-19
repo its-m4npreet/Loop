@@ -7,7 +7,7 @@ import { HowItWorks } from "./how-it-works"
 import { Navbar } from "./navbar"
 import { Pricing } from "./pricing"
 import { Testimonials } from "./testimonials"
-import { TrustBar } from "./trust-bar"
+// import { TrustBar } from "./trust-bar"
 import { WorkspacePreview } from "./workspace-preview"
 
 export function LandingPage() {
@@ -16,7 +16,7 @@ export function LandingPage() {
       <Navbar />
       <main>
         <Hero />
-        <TrustBar />
+        {/* <TrustBar /> */}
         <Features />
         <WorkspacePreview />
         <HowItWorks />
