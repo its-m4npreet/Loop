@@ -99,7 +99,7 @@ function Navbar({ collapsed, onToggleMobile, userName, userEmail, userImage }: N
       </div> */}
 
       <div className="navbar-actions">
-        <div className="navbar-notification-wrapper" ref={notifRef}>
+        {/* <div className="navbar-notification-wrapper" ref={notifRef}>
           <button
             className="navbar-icon-btn"
             onClick={() => {
@@ -144,7 +144,7 @@ function Navbar({ collapsed, onToggleMobile, userName, userEmail, userImage }: N
               })}
             </div>
           </div>
-        </div>
+        </div> */}
 
         <Link
           href="/import-feedback"

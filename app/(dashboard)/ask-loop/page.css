@@ -712,7 +712,12 @@
 @media (max-width: 640px) {
   .ask-loop-layout {
     height: calc(100vh - var(--navbar-height) - 50px);
-    gap: var(--space-3);
+    gap: 0;
+  }
+
+  .ask-loop-toolbar {
+    padding: var(--space-3) 0;
+    flex-shrink: 0;
   }
 
   .ask-loop-toolbar-brand span {
@@ -732,8 +737,32 @@
     max-height: calc(100vh - 32px);
   }
 
+  .ask-loop-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ask-loop-chat {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
   .ask-loop-welcome {
+    flex: 1;
+    min-height: 0;
     padding: var(--space-6) var(--space-4);
+    overflow-y: auto;
+  }
+
+  .ask-loop-messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .ask-loop-hero-logo-ring {
@@ -778,6 +807,14 @@
   .ask-loop-msg-bubble {
     font-size: 13.5px;
     padding: 8px 12px;
+  }
+
+  .ask-loop-input-wrap {
+    position: relative;
+    flex-shrink: 0;
+    padding: var(--space-3) 0;
+    background: var(--background);
+    border-top: 1px solid var(--color-border-light);
   }
 
   .ask-loop-input {

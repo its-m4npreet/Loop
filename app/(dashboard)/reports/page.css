@@ -786,7 +786,6 @@
   letter-spacing: 0.5px;
   color: var(--color-text-muted);
   margin: 0 0 var(--space-3);
-  border-left: 3px solid var(--color-accent);
   padding-left: var(--space-2);
 }
 
@@ -929,16 +928,10 @@
   min-width: 0;
 }
 
-.quote-card.positive {
-  border-left: 3px solid var(--color-accent);
-}
-
-.quote-card.negative {
-  border-left: 3px solid var(--color-negative-text);
-}
-
+.quote-card.positive,
+.quote-card.negative,
 .quote-card.neutral {
-  border-left: 3px solid var(--color-text-light);
+  border-left: none;
 }
 
 .quote-text {
@@ -1395,6 +1388,95 @@
     color: black !important;
     max-height: none !important;
     min-height: 0 !important;
+  }
+  .reports-modal-header {
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 12px 16px !important;
+  }
+  .reports-modal-header h3 {
+    color: #0f172a !important;
+  }
+  .badge-ai-generated {
+    background: transparent !important;
+    color: #64748b !important;
+    border: 1px solid #e2e8f0 !important;
+    font-size: 9px !important;
+  }
+  .details-body {
+    padding: 16px !important;
+  }
+  .report-detail-section h4 {
+    color: #475569 !important;
+    border-left: 2px solid #94a3b8 !important;
+    font-size: 11px !important;
+    margin-bottom: 8px !important;
+  }
+  .summary-text {
+    background: transparent !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 10px 12px !important;
+    color: #0f172a !important;
+  }
+  .sentiment-analysis-wrap {
+    background: transparent !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 10px 12px !important;
+  }
+  .sentiment-meter-bar {
+    height: 6px !important;
+  }
+  .details-theme-row {
+    background: transparent !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 6px 10px !important;
+  }
+  .theme-name-tag {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    font-weight: 600 !important;
+    padding: 1px 6px !important;
+  }
+  .details-themes-list {
+    gap: 6px !important;
+  }
+  .details-recommendations-list {
+    padding-left: 16px !important;
+    gap: 6px !important;
+  }
+  .details-recommendations-list li {
+    color: #334155 !important;
+    font-size: 12px !important;
+  }
+  .quote-card {
+    background: transparent !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 1px solid #e2e8f0 !important;
+    padding: 10px 12px !important;
+    page-break-inside: avoid !important;
+  }
+  .quote-card.positive,
+  .quote-card.negative {
+    border-left-color: #e2e8f0 !important;
+  }
+  .quote-text {
+    color: #334155 !important;
+    font-size: 12px !important;
+  }
+  .quote-meta {
+    color: #64748b !important;
+    font-size: 10px !important;
+  }
+  .quote-sentiment-pill {
+    background: transparent !important;
+    color: #64748b !important;
+    border: 1px solid #e2e8f0 !important;
+    font-size: 8px !important;
+  }
+  .report-two-col {
+    gap: 16px !important;
+  }
+  .report-config-editor {
+    display: none !important;
   }
   .reports-modal-footer,
   .close-btn {

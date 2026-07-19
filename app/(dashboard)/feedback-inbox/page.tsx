@@ -31,7 +31,7 @@ export default async function FeedbackInboxPage() {
     )
   }
 
-  const feedback = await getRecentFeedback(user.workspaceId, 200)
+  const feedback = await getRecentFeedback(user.workspaceId, 10)
 
   return (
     <div className="feedback-inbox-page">
@@ -53,7 +53,12 @@ export default async function FeedbackInboxPage() {
         </p>
       </div>
 
-      <FeedbackTable data={feedback} title="All Feedback" />
+      <FeedbackTable
+        data={feedback}
+        title="All Feedback"
+        enableInfiniteScroll
+        workspaceId={user.workspaceId}
+      />
     </div>
   )
 }
