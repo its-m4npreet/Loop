@@ -18,20 +18,14 @@ export default async function FeedbackInboxPage() {
   })
   if (!user) redirect('/api/auth')
 
-  if (!user.workspaceId) {
-    return (
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Feedback Inbox</h1>
-          <p className="page-subtitle">
-            You are not part of a workspace yet.
-          </p>
-        </div>
-      </div>
-    )
-  }
+  const hasWorkspace = !!user.workspaceId
+  const workspaceId = user.workspaceId ?? ''
 
-  const feedback = await getRecentFeedback(user.workspaceId, 10)
+  let feedback: Awaited<ReturnType<typeof getRecentFeedback>> = []
+
+  if (hasWorkspace) {
+    feedback = await getRecentFeedback(workspaceId, 10)
+  }
 
   return (
     <div className="feedback-inbox-page">
@@ -53,11 +47,18 @@ export default async function FeedbackInboxPage() {
         </p>
       </div>
 
+      {!hasWorkspace && (
+        <div className="workspace-nudge">
+          <span>Create or join a workspace to start importing feedback.</span>
+          <Link href="/workspace">Go to Workspace</Link>
+        </div>
+      )}
+
       <FeedbackTable
         data={feedback}
         title="All Feedback"
         enableInfiniteScroll
-        workspaceId={user.workspaceId}
+        workspaceId={workspaceId}
       />
     </div>
   )

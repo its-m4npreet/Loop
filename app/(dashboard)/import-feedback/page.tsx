@@ -16,20 +16,7 @@ export default async function ImportFeedbackPage() {
   })
   if (!user) redirect('/api/auth')
 
-  if (!user.workspaceId) {
-    return (
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Import Feedback</h1>
-          <p className="page-subtitle">
-            You are not part of a workspace yet. Create or join one to import
-            feedback.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
+  const hasWorkspace = !!user.workspaceId
   const role = user.role as Role
   const canImport =
     hasPermission(role, 'feedback:import') ||
@@ -47,12 +34,13 @@ export default async function ImportFeedbackPage() {
       }
     >
       <ImportFeedbackClient
-        canImport={canImport}
+        canImport={hasWorkspace && canImport}
         canManual={
-          hasPermission(role, 'feedback:manual') ||
-          hasPermission(role, 'feedback:import')
+          hasWorkspace &&
+          (hasPermission(role, 'feedback:manual') ||
+            hasPermission(role, 'feedback:import'))
         }
-        canBulk={hasPermission(role, 'feedback:import')}
+        canBulk={hasWorkspace && hasPermission(role, 'feedback:import')}
       />
     </Suspense>
   )

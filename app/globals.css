@@ -77,6 +77,32 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* Workspace nudge banner */
+.workspace-nudge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+  background: var(--color-info-bg);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-lg);
+  color: var(--color-info-text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.workspace-nudge a {
+  color: var(--color-info-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.workspace-nudge a:hover {
+  opacity: 0.8;
+}
+
 .bg-loop-gradient {
   background: radial-gradient(
     ellipse at 20% 50%,

@@ -14,7 +14,7 @@ import {
 import './Charts.css';
 
 interface ResponseTimeChartProps {
-  data: Array<{ label: string; count: number }>;
+  data?: Array<{ label: string; count: number }>;
 }
 
 function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
@@ -29,7 +29,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
   return null;
 }
 
-function ResponseTimeChart({ data }: ResponseTimeChartProps) {
+function ResponseTimeChart({ data = [] }: ResponseTimeChartProps) {
   return (
     <div className="chart-card">
       <div className="chart-card-header">

@@ -38,43 +38,39 @@ export default async function DashboardPage() {
   })
   if (!user) redirect('/api/auth')
 
-  if (!user.workspaceId) {
-    return (
-      <>
-        <div className="dashboard-page-header">
-          <div>
-            <h1 className="dashboard-title">Customer Intelligence Dashboard</h1>
-            <p className="dashboard-subtitle">
-              You are not part of a workspace yet. Create or join one to see
-              live data.
-            </p>
-          </div>
-        </div>
-      </>
-    )
+  const hasWorkspace = !!user.workspaceId
+  const workspaceId = user.workspaceId ?? ''
+
+  let stats: Stat[] = []
+  let volumeOverTime: { date: string; count: number }[] = []
+  let sentimentBreakdown: { name: string; value: number; color: string }[] = []
+  let channelDistribution: { channel: string; count: number }[] = []
+  let topThemes: { theme: string; mentions: number }[] = []
+  let allThemes: Awaited<ReturnType<typeof getThemesForWorkspace>> = []
+  let recentFeedback: Awaited<ReturnType<typeof getRecentFeedback>> = []
+  let insights: Awaited<ReturnType<typeof getDashboardInsights>> = null as unknown as Awaited<ReturnType<typeof getDashboardInsights>>
+
+  if (hasWorkspace) {
+    ;[
+      stats,
+      volumeOverTime,
+      sentimentBreakdown,
+      channelDistribution,
+      topThemes,
+      allThemes,
+      recentFeedback,
+      insights,
+    ] = await Promise.all([
+      getDashboardStats(workspaceId),
+      getFeedbackVolumeOverTime(workspaceId, 30),
+      getSentimentBreakdown(workspaceId),
+      getChannelDistribution(workspaceId),
+      getTopThemes(workspaceId, 6),
+      getThemesForWorkspace(workspaceId),
+      getRecentFeedback(workspaceId, 50),
+      getDashboardInsights(workspaceId),
+    ])
   }
-
-  const workspaceId = user.workspaceId
-
-  const [
-    stats,
-    volumeOverTime,
-    sentimentBreakdown,
-    channelDistribution,
-    topThemes,
-    allThemes,
-    recentFeedback,
-    insights,
-  ] = await Promise.all([
-    getDashboardStats(workspaceId),
-    getFeedbackVolumeOverTime(workspaceId, 30),
-    getSentimentBreakdown(workspaceId),
-    getChannelDistribution(workspaceId),
-    getTopThemes(workspaceId, 6),
-    getThemesForWorkspace(workspaceId),
-    getRecentFeedback(workspaceId, 50),
-    getDashboardInsights(workspaceId),
-  ])
 
   const themeCards: Theme[] = allThemes.slice(0, 4).map((t) => {
     const growthType: Theme['growthType'] =
@@ -132,6 +128,13 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {!hasWorkspace && (
+        <div className="workspace-nudge">
+          <span>Create or join a workspace to start seeing live data.</span>
+          <Link href="/workspace">Go to Workspace</Link>
+        </div>
+      )}
 
       <div className="stats-grid mb-6">
         {stats.map((stat) => (

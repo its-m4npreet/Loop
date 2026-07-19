@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { MessageSquare, Smile, Clock, Percent, Frown, CalendarDays } from 'lucide-react'
+import Link from 'next/link'
 
 import FeedbackVolumeChart from '../../components/chats/FeedbackVolumeChart'
 import FeedbackChannelsChart from '../../components/chats/FeedbackChannelsChart'
@@ -39,42 +40,44 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
   })
   if (!user) redirect("/api/auth")
 
-  if (!user.workspaceId) {
-    return (
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Analytics</h1>
-          <p className="page-subtitle">You are not part of a workspace yet.</p>
-        </div>
-      </div>
-    )
-  }
+  const hasWorkspace = !!user.workspaceId
+  const workspaceId = user.workspaceId ?? ''
 
   const resolvedParams = await searchParams;
   const daysParam = parseInt(resolvedParams.days || "30", 10);
   const days = isNaN(daysParam) || daysParam < 1 ? 30 : daysParam;
 
-  const [
-    summary,
-    sentimentBreakdown,
-    volumeOverTime,
-    channelDistribution,
-    topThemes,
-    themeGrowth,
-    periodComparison,
-    responseTimeDistribution
-  ] = await Promise.all([
-    getAnalyticsSummary(user.workspaceId, days),
-    getSentimentBreakdown(user.workspaceId, days),
-    getFeedbackVolumeOverTime(user.workspaceId, days),
-    getChannelDistribution(user.workspaceId, days),
-    getTopThemes(user.workspaceId, 6, days),
-    getThemeGrowthOverTime(user.workspaceId, 8),
-    getPeriodComparison(user.workspaceId, days),
-    getResponseTimeDistribution(user.workspaceId, days)
-  ])
+  let summary: Awaited<ReturnType<typeof getAnalyticsSummary>> = { totalFeedback: 0, negativePct: 0, newThisWeek: 0, avgSatisfaction: 0, avgResponseTime: 0, resolutionRate: 0 } as Awaited<ReturnType<typeof getAnalyticsSummary>>
+  let sentimentBreakdown: Awaited<ReturnType<typeof getSentimentBreakdown>> = []
+  let volumeOverTime: Awaited<ReturnType<typeof getFeedbackVolumeOverTime>> = []
+  let channelDistribution: Awaited<ReturnType<typeof getChannelDistribution>> = []
+  let topThemes: Awaited<ReturnType<typeof getTopThemes>> = []
+  let themeGrowth: Awaited<ReturnType<typeof getThemeGrowthOverTime>> = []
+  let periodComparison: Awaited<ReturnType<typeof getPeriodComparison>> = { current: { totalFeedback: 0, positivePct: 0, negativePct: 0, resolutionRate: 0, avgResponseTime: 0, avgSatisfaction: 0 }, previous: { totalFeedback: 0, positivePct: 0, negativePct: 0, resolutionRate: 0, avgResponseTime: 0, avgSatisfaction: 0 }, volumeChange: 0, posChange: 0, negChange: 0, resolutionChange: 0, responseChange: 0, csatChange: 0, periodLabel: '' } as Awaited<ReturnType<typeof getPeriodComparison>>
+  let responseTimeDistribution: Awaited<ReturnType<typeof getResponseTimeDistribution>> = []
 
-  // Transform topThemes for the Recharts component if necessary
+  if (hasWorkspace) {
+    ;[
+      summary,
+      sentimentBreakdown,
+      volumeOverTime,
+      channelDistribution,
+      topThemes,
+      themeGrowth,
+      periodComparison,
+      responseTimeDistribution
+    ] = await Promise.all([
+      getAnalyticsSummary(workspaceId, days),
+      getSentimentBreakdown(workspaceId, days),
+      getFeedbackVolumeOverTime(workspaceId, days),
+      getChannelDistribution(workspaceId, days),
+      getTopThemes(workspaceId, 6, days),
+      getThemeGrowthOverTime(workspaceId, 8),
+      getPeriodComparison(workspaceId, days),
+      getResponseTimeDistribution(workspaceId, days)
+    ])
+  }
+
   const topThemesChartData = topThemes.map(t => ({
     theme: t.theme,
     mentions: t.mentions
@@ -97,6 +100,13 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
           activeDays={days}
         />
       </div>
+
+      {!hasWorkspace && (
+        <div className="workspace-nudge">
+          <span>Create or join a workspace to start seeing analytics.</span>
+          <Link href="/workspace">Go to Workspace</Link>
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="analytics-stats-grid">

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { FileText, CheckCircle, Clock, Calendar } from 'lucide-react'
+import Link from 'next/link'
 
 import { getReportsList, getReportsStats } from "@/lib/reportsQueries"
 import ReportsListClient from "./ReportsListClient"
@@ -19,21 +20,18 @@ export default async function ReportsPage() {
   })
   if (!user) redirect("/api/auth")
 
-  if (!user.workspaceId) {
-    return (
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Reports</h1>
-          <p className="page-subtitle">You are not part of a workspace yet.</p>
-        </div>
-      </div>
-    )
-  }
+  const hasWorkspace = !!user.workspaceId
+  const workspaceId = user.workspaceId ?? ''
 
-  const [initialData, stats] = await Promise.all([
-    getReportsList(user.workspaceId, { page: 1, pageSize: 10 }),
-    getReportsStats(user.workspaceId)
-  ])
+  let initialData: Awaited<ReturnType<typeof getReportsList>> = { reports: [], total: 0, page: 1, pageSize: 10, totalPages: 0 } as Awaited<ReturnType<typeof getReportsList>>
+  let stats: Awaited<ReturnType<typeof getReportsStats>> = { total: 0, completed: 0, draft: 0, scheduled: 0 }
+
+  if (hasWorkspace) {
+    ;[initialData, stats] = await Promise.all([
+      getReportsList(workspaceId, { page: 1, pageSize: 10 }),
+      getReportsStats(workspaceId)
+    ])
+  }
 
   return (
     <div className="reports-page">
@@ -45,6 +43,13 @@ export default async function ReportsPage() {
           </p>
         </div>
       </div>
+
+      {!hasWorkspace && (
+        <div className="workspace-nudge">
+          <span>Create or join a workspace to start generating reports.</span>
+          <Link href="/workspace">Go to Workspace</Link>
+        </div>
+      )}
 
       <div className="reports-stats-grid">
         <div className="reports-stat-card">
