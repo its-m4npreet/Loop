@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getReportById } from "@/lib/reportsQueries";
 import { NextResponse } from "next/server";
+import { UpdateReportSchema, parseBody } from "@/lib/validations";
 
 export async function GET(
   request: Request,
@@ -59,12 +60,9 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    let body: { title?: string; periodStart?: string; periodEnd?: string } = {};
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
+
+    const result = await parseBody(request, UpdateReportSchema);
+    if ("error" in result) return result.error;
 
     const report = await prisma.report.findFirst({
       where: { id, workspaceId: user.workspaceId },
@@ -77,10 +75,11 @@ export async function PATCH(
       return NextResponse.json({ error: "Cannot modify completed reports" }, { status: 400 });
     }
 
+    const { title, periodStart, periodEnd } = result.data;
     const data: { title?: string; periodStart?: Date; periodEnd?: Date } = {};
-    if (body.title) data.title = body.title;
-    if (body.periodStart) data.periodStart = new Date(body.periodStart);
-    if (body.periodEnd) data.periodEnd = new Date(body.periodEnd);
+    if (title) data.title = title;
+    if (periodStart) data.periodStart = new Date(periodStart);
+    if (periodEnd) data.periodEnd = new Date(periodEnd);
 
     const updated = await prisma.report.update({
       where: { id },

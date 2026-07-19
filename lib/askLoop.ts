@@ -267,6 +267,8 @@ New question from the user: """${question}"""
 Answer as LOOP AI:`
 }
 
+import { withStreamRetry } from "@/lib/geminiRetry"
+
 /**
  * Stream a Gemini response for a user question, grounded in retrieved
  * workspace feedback data. Returns an async generator of text chunks.
@@ -280,7 +282,7 @@ export async function* streamAskLoopAnswer(
   const prompt = buildPrompt(ctx, history, question)
 
   const model = getGeminiModel()
-  const result = await model.generateContentStream(prompt)
+  const result = await withStreamRetry(() => model.generateContentStream(prompt))
 
   for await (const chunk of result.stream) {
     const text = chunk.text()

@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
-import { Role, ALL_ROLES } from "@/lib/permissions"
+import { Role } from "@/lib/permissions"
+import { UpdateMemberRoleSchema, parseBody } from "@/lib/validations"
 
 export async function PATCH(
   req: Request,
@@ -22,12 +23,11 @@ export async function PATCH(
   }
 
   const { userId } = await params
-  const body = await req.json()
-  const { role } = body as { role?: string }
 
-  if (!ALL_ROLES.includes(role as Role)) {
-    return NextResponse.json({ error: "Role must be ADMIN, ANALYST, or VIEWER" }, { status: 400 })
-  }
+  const result = await parseBody(req, UpdateMemberRoleSchema)
+  if ("error" in result) return result.error
+
+  const { role } = result.data
 
   const targetUser = await prisma.user.findUnique({
     where: { id: userId },

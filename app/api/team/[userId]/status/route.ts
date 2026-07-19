@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { UpdateMemberStatusSchema, parseBody } from "@/lib/validations"
 
 export async function PATCH(
   req: Request,
@@ -21,12 +22,11 @@ export async function PATCH(
   }
 
   const { userId } = await params
-  const body = await req.json()
-  const { isActive } = body as { isActive?: boolean }
 
-  if (typeof isActive !== "boolean") {
-    return NextResponse.json({ error: "isActive must be a boolean" }, { status: 400 })
-  }
+  const result = await parseBody(req, UpdateMemberStatusSchema)
+  if ("error" in result) return result.error
+
+  const { isActive } = result.data
 
   const targetUser = await prisma.user.findUnique({
     where: { id: userId },

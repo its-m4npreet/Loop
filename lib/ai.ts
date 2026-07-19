@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { withRetry } from "@/lib/geminiRetry";
 
 // ── Initialize Gemini ──
 function getGeminiModel() {
@@ -138,7 +139,7 @@ Generate a JSON response with this exact structure (no markdown fences, just raw
 
   try {
     const model = getGeminiModel();
-    const result = await model.generateContent(prompt);
+    const result = await withRetry(() => model.generateContent(prompt));
     const text = result.response.text();
 
     // Parse AI response — strip markdown fences if present

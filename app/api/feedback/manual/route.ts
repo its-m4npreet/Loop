@@ -3,6 +3,7 @@ import { requireImportUser } from "@/lib/importAuth"
 import { importSingleFeedback } from "@/lib/feedbackImport"
 import { IMPORT_CHANNELS } from "@/lib/importConstants"
 import { hasPermission } from "@/lib/permissions"
+import { ManualFeedbackSchema, parseBody } from "@/lib/validations"
 
 export async function POST(req: Request) {
   try {
@@ -17,31 +18,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    let body: {
-      content?: string
-      channel?: string
-      customerName?: string
-      rating?: number | string | null
-      feedbackDate?: string | null
-    }
-    try {
-      body = await req.json()
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
-    }
+    const result = await parseBody(req, ManualFeedbackSchema)
+    if ("error" in result) return result.error
 
-    const content = body.content?.trim()
-    const channel = body.channel?.trim()
-
-    if (!content) {
-      return NextResponse.json(
-        { error: "Feedback content is required." },
-        { status: 400 }
-      )
-    }
-    if (!channel) {
-      return NextResponse.json({ error: "Channel is required." }, { status: 400 })
-    }
+    const { content, channel, customerName, rating, feedbackDate } = result.data
 
     const allowed = new Set<string>(IMPORT_CHANNELS)
     if (!allowed.has(channel)) {
@@ -53,37 +33,13 @@ export async function POST(req: Request) {
       )
     }
 
-    let rating: number | null = null
-    if (body.rating !== undefined && body.rating !== null && body.rating !== "") {
-      const n = Number(body.rating)
-      if (Number.isNaN(n) || n < 1 || n > 5) {
-        return NextResponse.json(
-          { error: "Rating must be a number between 1 and 5." },
-          { status: 400 }
-        )
-      }
-      rating = n
-    }
-
-    let createdAt: Date | null = null
-    if (body.feedbackDate) {
-      const d = new Date(body.feedbackDate)
-      if (Number.isNaN(d.getTime())) {
-        return NextResponse.json(
-          { error: "Invalid feedback date." },
-          { status: 400 }
-        )
-      }
-      createdAt = d
-    }
-
-    const result = await importSingleFeedback(
+    const result2 = await importSingleFeedback(
       {
-        content,
-        channel,
-        customerLabel: body.customerName?.trim() || null,
+        content: content.trim(),
+        channel: channel.trim(),
+        customerLabel: customerName?.trim() || null,
         satisfaction: rating,
-        createdAt,
+        createdAt: feedbackDate,
       },
       { workspaceId: user.workspaceId, importedById: user.id }
     )
@@ -91,7 +47,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       message: "Feedback analyzed and saved.",
-      feedback: result,
+      feedback: result2,
     })
   } catch (err) {
     console.error("Manual feedback import failed:", err)

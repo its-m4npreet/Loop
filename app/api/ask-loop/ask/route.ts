@@ -2,36 +2,24 @@ import { NextResponse } from "next/server"
 import { requireWorkspacePermission } from "@/lib/workspaceAuth"
 import { streamAskLoopAnswer } from "@/lib/askLoop"
 import { ensureConversation, getRecentTurns, addMessage } from "@/lib/askLoopQueries"
+import { AskLoopSchema, parseBody } from "@/lib/validations"
 
 export async function POST(request: Request) {
   const authResult = await requireWorkspacePermission("ask_loop:use")
   if ("error" in authResult) return authResult.error
   const { workspaceId, id: userId } = authResult.user
 
-  let body: { message?: string; conversationId?: string } = {}
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
-  }
+  const result = await parseBody(request, AskLoopSchema)
+  if ("error" in result) return result.error
 
-  const question = body.message?.trim()
-  if (!question) {
-    return NextResponse.json({ error: "Message is required" }, { status: 400 })
-  }
-  if (question.length > 2000) {
-    return NextResponse.json(
-      { error: "Message is too long (max 2000 characters)" },
-      { status: 400 }
-    )
-  }
+  const { message: question, conversationId: rawConversationId } = result.data
 
   let conversationId: string
   try {
     conversationId = await ensureConversation(
       workspaceId,
       userId,
-      body.conversationId,
+      rawConversationId,
       question
     )
   } catch (error) {

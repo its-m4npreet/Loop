@@ -1,26 +1,13 @@
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { hash } from "bcryptjs"
+import { AcceptInviteSchema, parseBody } from "@/lib/validations"
 
 export async function POST(req: Request) {
-  const body = await req.json()
-  const { token, name, password } = body as {
-    token?: string
-    name?: string
-    password?: string
-  }
+  const result = await parseBody(req, AcceptInviteSchema)
+  if ("error" in result) return result.error
 
-  if (!token || typeof token !== "string") {
-    return NextResponse.json({ error: "Invalid invitation link" }, { status: 400 })
-  }
-
-  if (!name || typeof name !== "string" || !name.trim()) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 })
-  }
-
-  if (!password || typeof password !== "string" || password.length < 8) {
-    return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 })
-  }
+  const { token, name, password } = result.data
 
   const invitation = await prisma.invitation.findUnique({
     where: { token },
@@ -51,7 +38,7 @@ export async function POST(req: Request) {
     prisma.user.create({
       data: {
         email: invitation.email,
-        name: name.trim(),
+        name,
         passwordHash,
         role: invitation.role,
         workspaceId: invitation.workspaceId,
