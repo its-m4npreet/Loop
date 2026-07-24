@@ -1,10 +1,10 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
 import { prisma } from "@/lib/prisma"
 import {
   getAnalyticsSummary,
   getSentimentBreakdown,
   getTopThemes,
 } from "@/lib/analyticsQueries"
+import { createGeminiModel } from "@/lib/geminiClient"
 
 // ── Types ──
 
@@ -28,17 +28,6 @@ export interface RetrievedContext {
   sentiment: Awaited<ReturnType<typeof getSentimentBreakdown>>
   topThemes: Awaited<ReturnType<typeof getTopThemes>>
   matchedFeedback: MatchedFeedback[]
-}
-
-// ── Gemini model ──
-
-function getGeminiModel() {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY environment variable is not set")
-  }
-  const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({ model: "gemini-3.5-flash" })
 }
 
 // ── Lightweight NL -> filter extraction ──
@@ -281,7 +270,7 @@ export async function* streamAskLoopAnswer(
   const ctx = await retrieveContext(workspaceId, question)
   const prompt = buildPrompt(ctx, history, question)
 
-  const model = getGeminiModel()
+  const model = createGeminiModel()
   const result = await withStreamRetry(() => model.generateContentStream(prompt))
 
   for await (const chunk of result.stream) {

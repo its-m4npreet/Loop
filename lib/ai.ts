@@ -1,15 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { withRetry } from "@/lib/geminiRetry";
-
-// ── Initialize Gemini ──
-function getGeminiModel() {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY environment variable is not set");
-  }
-  const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
-}
+import { createGeminiModel } from "@/lib/geminiClient";
 
 // ── Types ──
 export interface FeedbackItem {
@@ -138,7 +128,7 @@ Generate a JSON response with this exact structure (no markdown fences, just raw
 }`;
 
   try {
-    const model = getGeminiModel();
+    const model = createGeminiModel();
     const result = await withRetry(() => model.generateContent(prompt));
     const text = result.response.text();
 

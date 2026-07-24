@@ -39,7 +39,9 @@ export function Hero() {
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <RequestDemoButton />
             <Link
-              href=""
+              href="https://youtu.be/J5gPMkT9MeU"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-xl border border-loop-green bg-transparent px-8 py-4 text-sm font-semibold text-loop-green transition-colors hover:bg-emerald-50"
             >
               <Play className="h-4 w-4" />

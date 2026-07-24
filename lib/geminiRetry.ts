@@ -91,7 +91,8 @@ export async function withStreamRetry<T>(
       }
       const delay = getRetryDelay(error, attempt, opts)
       console.warn(
-        `[Gemini Stream] Retryable error (attempt ${attempt + 1}/${opts.maxRetries}), waiting ${Math.round(delay / 1000)}s...`
+        `[Gemini Stream] Retryable error (attempt ${attempt + 1}/${opts.maxRetries}), waiting ${Math.round(delay / 1000)}s...`,
+        error instanceof Error ? error.message : error
       )
       await sleep(delay)
     }

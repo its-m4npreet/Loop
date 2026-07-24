@@ -1,5 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
 import { withRetry } from "@/lib/geminiRetry"
+import { createGeminiModelOptional } from "@/lib/geminiClient"
 
 export type SentimentLabel = "POSITIVE" | "NEUTRAL" | "NEGATIVE"
 
@@ -102,10 +102,7 @@ export function heuristicAnalyze(content: string, rating?: number | null): Feedb
 }
 
 function getGeminiModel() {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return null
-  const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({ model: "gemini-3.5-flash" })
+  return createGeminiModelOptional()
 }
 
 function parseSentimentLabel(raw: string): SentimentLabel {
