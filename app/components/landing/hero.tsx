@@ -1,7 +1,9 @@
 import { Check, Play, Sparkles } from "lucide-react"
-import Link from "next/link"
 import { DashboardPreview } from "./dashboard-preview"
 import { RequestDemoButton } from "./request-demo-button"
+
+/** Public product demo (YouTube). Plain <a> so it works reliably in production. */
+const DEMO_VIDEO_URL = "https://www.youtube.com/watch?v=J5gPMkT9MeU"
 
 const trustItems = [
   "No credit card required",
@@ -35,18 +37,18 @@ export function Hero() {
           issues, and AI-generated insights from one intelligent platform.
         </p>
 
-        <div className="mx-auto mt-10 max-w-xl rounded-2xl  px-8 py-4 ">
+        <div className="mx-auto mt-10 max-w-xl rounded-2xl px-8 py-4">
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <RequestDemoButton />
-            <Link
-              href="https://youtu.be/J5gPMkT9MeU"
+            <a
+              href={DEMO_VIDEO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-xl border border-loop-green bg-transparent px-8 py-4 text-sm font-semibold text-loop-green transition-colors hover:bg-emerald-50"
             >
               <Play className="h-4 w-4" />
               Watch Demo
-            </Link>
+            </a>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center divide-x divide-slate-200 text-xs text-slate-600">
             {trustItems.map((item) => (
