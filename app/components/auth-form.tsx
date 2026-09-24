@@ -4,8 +4,9 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Mail, LockKeyhole, Eye, EyeOff, Loader2 } from "lucide-react";
+import { User, Mail, LockKeyhole, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
+import Link from "next/link";
 
 const btnTap = { scale: 0.97 };
 
@@ -22,6 +23,30 @@ export function AuthForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+
+  async function resendVerification() {
+    setResending(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to resend. Please try again.");
+      }
+      setResent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend. Please try again.");
+    } finally {
+      setResending(false);
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -47,9 +72,15 @@ export function AuthForm() {
           body: JSON.stringify({ name, email, password }),
         });
 
+        const data = await res.json();
+
         if (!res.ok) {
-          const data = await res.json();
           throw new Error(data.error || "Something went wrong");
+        }
+
+        if (!data.emailVerified) {
+          setVerificationSent(true);
+          return;
         }
       }
 
@@ -73,6 +104,50 @@ export function AuthForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (verificationSent) {
+    return (
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg shadow-slate-200/60">
+        <div className="flex flex-col items-center text-center">
+          <CheckCircle className="mb-4" size={48} color="#22c55e" />
+          <h2 className="text-xl font-semibold text-slate-900">Verify your email</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+            We&apos;ve sent a verification link to <strong>{email}</strong>. Check
+            your inbox (and spam folder) and click the link to activate your
+            account, then sign in.
+          </p>
+
+          {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
+
+          {!resent ? (
+            <button
+              type="button"
+              onClick={resendVerification}
+              disabled={resending}
+              className="mt-4 text-sm font-semibold text-loop-green hover:text-loop-green-dark disabled:opacity-60"
+            >
+              {resending ? "Resending..." : "Resend verification email"}
+            </button>
+          ) : (
+            <p className="mt-4 text-sm font-semibold text-loop-green">
+              A new verification email has been sent.
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setVerificationSent(false);
+              setMode("signin");
+            }}
+            className="mt-3 text-sm font-medium text-slate-500 hover:text-slate-700"
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -186,12 +261,22 @@ export function AuthForm() {
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="mb-1.5 block text-sm font-semibold text-slate-800"
-          >
-            Password
-          </label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label
+              htmlFor="password"
+              className="block text-sm font-semibold text-slate-800"
+            >
+              Password
+            </label>
+            {mode === "signin" && (
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs font-medium text-loop-green hover:text-loop-green-dark"
+              >
+                Forgot password?
+              </Link>
+            )}
+          </div>
           <div className="relative">
             <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <input

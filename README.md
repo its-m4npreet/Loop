@@ -36,7 +36,7 @@ LOOP turns customer feedback from support tickets, app reviews, surveys, sales n
 | **Workspaces** | Multi-tenant workspaces; users belong to one active workspace |
 | **Dashboard** | KPI cards, volume/sentiment charts, themes, quick actions, AI insights |
 | **Feedback Inbox** | Browse, filter, and review feedback items |
-| **Import Feedback** | Manual entry, CSV upload, and simulated sample data with AI analysis |
+| **Import Feedback** | Manual entry and CSV upload with AI analysis |
 | **Analytics** | Period comparison, channels, response time, theme growth |
 | **Themes** | Recurring topics with colors, counts, and trends |
 | **Ask LOOP** | Chat over workspace feedback (retrieval + Gemini streaming) |
@@ -57,8 +57,8 @@ LOOP turns customer feedback from support tickets, app reviews, surveys, sales n
 | Auth | [NextAuth.js](https://authjs.dev) **v5** (JWT sessions) + Prisma adapter patterns |
 | Database | PostgreSQL |
 | ORM | [Prisma](https://www.prisma.io) **7** (`@prisma/adapter-pg`) |
-| AI | Google Gemini (`@google/generative-ai`) — model **`gemini-3.5-flash`** |
-| Email | Nodemailer (team invites) |
+| AI | Google Gemini (`@google/generative-ai`) — model **`gemini-3.6-flash`** (via `GEMINI_MODEL`) |
+| Email | Resend (preferred) with Nodemailer SMTP fallback (team invites) |
 | Package manager | **pnpm** (lockfile + Vercel `installCommand`) |
 | Language | TypeScript **5** |
 
@@ -93,7 +93,6 @@ loop/
 │   ├── schema.prisma
 │   ├── migrations/
 │   └── seed.ts
-├── data/ & public/data/      # Sample JSON for import/simulation
 ├── scripts/                  # Ops helpers (e.g. schema check)
 ├── proxy.ts                  # Route protection (session cookie gate)
 ├── prisma.config.ts          # Prisma 7 datasource / migrate config
@@ -185,9 +184,14 @@ Copy from `.env.example`:
 | `AUTH_GOOGLE_ID` | Optional | Google OAuth client ID |
 | `AUTH_GOOGLE_SECRET` | Optional | Google OAuth client secret |
 | `NEXT_PUBLIC_APP_URL` | Yes (invites) | Public app origin, e.g. `http://localhost:3000` |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | Optional | Team invite emails |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | Optional | Team invite emails (SMTP transport) |
+| `RESEND_API_KEY` | Optional | Team invite emails via Resend (preferred in production; falls back to SMTP) |
+| `RESEND_FROM` | Optional | Resend sender address, default `Loop <noreply@loop.app>` |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Optional | Distributed rate limiting (Upstash). Without these, an in-memory limiter is used (single instance only) |
+| `SENTRY_DSN` | Optional | Error reporting — structured logs forwarded to Sentry (no SDK required) |
 | `GEMINI_API_KEY` | Yes (AI features) | Google AI Studio / Gemini API key |
-| `ANTHROPIC_API_KEY` | Fallback only | Accepted as alternate env name in some AI helpers; Gemini client is used |
+| `GEMINI_MODEL` | Optional | AI model override; default `gemini-3.6-flash` |
+| `ALLOW_PROD_SEED` | Optional | Set to `true` to allow `db:seed` in production (see [Demo accounts](#demo-accounts)) |
 
 **Local Postgres example:**
 
@@ -214,7 +218,8 @@ DATABASE_URL_UNPOOLED="postgresql://postgres:password@localhost:5432/loop?schema
 | `Report` | Generated report documents |
 | `Invitation` | Team invites (token, role, expiry) |
 | `AskLoopConversation` / `AskLoopMessage` | Per-user Ask LOOP chat history |
-| `Embedding` / `Conversation` / `Message` | Schema support for RAG / alternate chat models |
+
+> Note: `Embedding`, `Conversation`, and `Message` (old RAG scaffolding) were removed in migration `20260815000000_drop_unused_rag_models`.
 
 ### Migrations
 
@@ -223,6 +228,7 @@ prisma/migrations/
   20260712142554_init_with_feedback_models/
   20260715170219_feedback_import_fields/
   20260718103600_add_ask_loop_and_rag_models/
+  20260815000000_drop_unused_rag_models/
 ```
 
 ```bash
@@ -246,6 +252,8 @@ After `pnpm db:seed` (workspace **Acme Corp**):
 | Viewer | `viewer@acme.test` | `Viewer123!` |
 
 Seed also creates themes, sample feedback, and sample reports. **It wipes existing seed-related tables** before inserting — do not run against production data you care about.
+
+**Production guard:** `prisma/seed.ts` refuses to run when `NODE_ENV=production` unless `ALLOW_PROD_SEED=true`. If you intentionally want demo data in a production/staging DB, set that flag explicitly.
 
 ---
 
@@ -285,7 +293,6 @@ Table of feedback with filters (status, sentiment, channel, search). Statuses: `
 
 - Manual feedback entry  
 - CSV upload (parsed in `lib/csvParse.ts`)  
-- Simulate / sample data from JSON fixtures  
 - AI analysis on import (`lib/feedbackAnalysis.ts` → sentiment, themes, feature area)
 
 Channels include: Support Ticket, App Review, Survey Response, Community Post, Sales Call Note.
@@ -330,7 +337,7 @@ Workspace settings and personal profile/avatar.
 2. Ensure a conversation owned by **this user + workspace** (create if needed).  
 3. Retrieve relevant feedback from Postgres (date window, optional sentiment, keywords) — lightweight RAG without a vector DB (`lib/askLoop.ts`).  
 4. Build a prompt with system rules + data snapshot + recent turns.  
-5. Stream Gemini (`gemini-3.5-flash`) to the client; persist user + assistant messages.
+5. Stream Gemini (`GEMINI_MODEL`, default `gemini-3.6-flash`) to the client; persist user + assistant messages.
 
 ### History storage
 
@@ -346,13 +353,15 @@ Workspace settings and personal profile/avatar.
 
 | Feature | Model / service | Code |
 |---------|-----------------|------|
-| Ask LOOP chat | `gemini-3.5-flash` | `lib/askLoop.ts` |
-| Feedback analysis on import | `gemini-3.5-flash` | `lib/feedbackAnalysis.ts` |
-| Report generation | `gemini-3.5-flash` | `lib/ai.ts` |
-| Team invite email | SMTP (Nodemailer) | `lib/mail.ts` |
+| Ask LOOP chat | `GEMINI_MODEL` (default `gemini-3.6-flash`) | `lib/askLoop.ts` |
+| Feedback analysis on import | same | `lib/feedbackAnalysis.ts` |
+| Report generation | same | `lib/ai.ts` |
+| Team invite email | Resend if `RESEND_API_KEY` set, else SMTP (Nodemailer) | `lib/mail.ts` |
 | Google sign-in | Google OAuth | `lib/auth.ts` |
+| Rate limiting | Upstash (falls back to in-memory) | `lib/rateLimit.ts` |
+| Error reporting | Structured JSON logs + Sentry envelope (`SENTRY_DSN`) | `lib/logger.ts` |
 
-If the model ID is retired by Google, update the string in those three `lib/*` files (and retest streaming + batch analysis).
+**Model is centralized** in `lib/geminiClient.ts` (`GEMINI_MODEL`, default `gemini-3.6-flash`). All three AI features read from there — if Google retires the model, update that one constant (and retest streaming + batch analysis).
 
 ---
 
@@ -380,7 +389,8 @@ If the model ID is retired by Google, update the string in those three `lib/*` f
 - **Auth pages:** Sign-in UI at `/api/auth` (custom); NextAuth handlers under `/api/auth/[...nextauth]`.  
 - **Route protection:** `proxy.ts` redirects unauthenticated users on dashboard paths to `/api/auth`.  
 - **Styling:** Global tokens in `app/globals.css`; many dashboard pages use colocated `page.css` files. Tailwind preflight may reset lists — Ask LOOP answer CSS restores list markers.  
-- **Import fixtures:** Sample JSON under `data/` and `public/data/` (app reviews, support tickets, surveys).
+- **Rate limiting:** API routes call `enforceRateLimit` from `lib/rateLimit.ts`. With Upstash env vars set, limits are shared across instances; without them an in-memory limiter applies (fine for local, not multi-instance). Limits are per user per window (e.g. Ask LOOP 20/min, report generation 5/min).  
+- **Logging:** Use `logger` from `lib/logger.ts` (structured JSON). `reportError`/`logger.error` forward to Sentry when `SENTRY_DSN` is set.
 
 ---
 
@@ -408,9 +418,13 @@ Do **not** run `db:seed` on production unless you intentionally want demo data (
 - [ ] Strong `AUTH_SECRET`  
 - [ ] HTTPS app URL in `NEXT_PUBLIC_APP_URL`  
 - [ ] Migrations applied  
-- [ ] Gemini key with access to `gemini-3.5-flash` (or updated model id)  
+- [ ] Gemini key with access to `gemini-3.6-flash` (set `GEMINI_MODEL` if needed)  
 - [ ] Google OAuth redirect URIs if using Google login  
-- [ ] SMTP configured if invite emails are required  
+- [ ] Resend (`RESEND_API_KEY`) or SMTP configured if invite emails are required  
+- [ ] Upstash (`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`) for cross-instance rate limiting  
+- [ ] `SENTRY_DSN` set for error reporting  
+- [ ] Never run `db:seed` on production unless `ALLOW_PROD_SEED=true` is intentional  
+- [ ] Do not use Google login for users who already have email/password accounts unless you migrate them — NextAuth returns `OAuthAccountNotLinked` (a deliberate safety default) to prevent account takeover  
 
 ---
 
@@ -425,7 +439,9 @@ Do **not** run `db:seed` on production unless you intentionally want demo data (
 | Ask LOOP empty / wrong answers | Ensure workspace has feedback; seed or import data |
 | Auth redirect loop | Check `AUTH_SECRET` and session cookies; open `/api/auth` |
 | Google login fails | Verify OAuth client IDs and authorized redirect URIs |
-| Invite email not sent | Verify SMTP env; links still may work if accept flow is used without email |
+| Google login fails for an existing email/password user | `OAuthAccountNotLinked` — expected safety behavior; don't re-enable `allowDangerousEmailAccountLinking` |
+| Invite email not sent | Verify SMTP/Resend env; links still may work if accept flow is used without email |
+| `429 Too Many Requests` | You hit a rate limit; wait for the window to reset (see `lib/rateLimit.ts`) |
 
 Local Postgres + schema inspection (SSL off for local):
 

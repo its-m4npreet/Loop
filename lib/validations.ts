@@ -29,7 +29,10 @@ export async function parseBody<T extends z.ZodType>(
 
 export const RegisterSchema = z.object({
   name: z.string().max(100).optional(),
-  email: z.string().email("Invalid email address"),
+  email: z
+    .string()
+    .email("Invalid email address")
+    .transform((s) => s.trim().toLowerCase()),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -120,6 +123,59 @@ export const InboxQuerySchema = z.object({
   take: z.coerce.number().int().min(1).max(100).default(10),
 })
 
+// ── Public API ingestion ──
+
+export const ApiIngestFeedbackSchema = z.object({
+  content: z
+    .string({ required_error: "content is required" })
+    .min(1, "content is required")
+    .max(10000, "content is too long (max 10000 characters)")
+    .transform((s) => s.trim()),
+  channel: z
+    .string({ required_error: "channel is required" })
+    .min(1, "channel is required")
+    .max(100, "channel is too long (max 100 characters)")
+    .transform((s) => s.trim()),
+  customerName: z
+    .string()
+    .max(200, "customerName is too long (max 200 characters)")
+    .optional()
+    .transform((s) => s?.trim() || null),
+  sourceRef: z
+    .string()
+    .max(200, "sourceRef is too long (max 200 characters)")
+    .optional()
+    .transform((s) => s?.trim() || null),
+  rating: z
+    .union([z.number(), z.string(), z.null()])
+    .optional()
+    .transform((v) => {
+      if (v === undefined || v === null || v === "") return null
+      const n = typeof v === "number" ? v : Number(v)
+      if (Number.isNaN(n) || n < 1 || n > 5) return null
+      return n
+    }),
+  feedbackDate: z
+    .string()
+    .optional()
+    .transform((v) => {
+      if (!v) return null
+      const d = new Date(v)
+      if (Number.isNaN(d.getTime())) return null
+      return d
+    }),
+})
+
+// ── Integrations (API keys) ──
+
+export const CreateApiKeySchema = z.object({
+  name: z
+    .string({ required_error: "Name is required" })
+    .min(1, "Name is required")
+    .max(100, "Name is too long (max 100 characters)")
+    .transform((s) => s.trim()),
+})
+
 // ── Ask LOOP ──
 
 export const AskLoopSchema = z.object({
@@ -187,4 +243,12 @@ export const ReportsQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(10),
   search: z.string().optional().default(""),
   status: z.string().optional().default("ALL"),
+})
+
+// ── Billing ──
+
+export const CheckoutSchema = z.object({
+  plan: z.enum(["PRO", "BUSINESS"], {
+    errorMap: () => ({ message: "plan must be PRO or BUSINESS" }),
+  }),
 })

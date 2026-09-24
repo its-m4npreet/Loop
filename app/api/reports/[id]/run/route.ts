@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { generateVoCReport } from "@/lib/ai";
 import { NextResponse } from "next/server";
 import type { FeedbackItem } from "@/lib/ai";
+import { enforceRateLimit } from "@/lib/rateLimit";
+import { enforceUsageLimit } from "@/lib/plans";
+import { logger } from "@/lib/logger";
 
 export async function POST(
   request: Request,
@@ -13,6 +16,14 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimitError = await enforceRateLimit({
+      key: `reports-run:user:${session.user.id}`,
+      limit: 5,
+      windowSeconds: 60,
+      label: "Report compilation",
+    });
+    if (rateLimitError) return rateLimitError;
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -45,6 +56,10 @@ export async function POST(
     ) {
       periodEnd.setUTCHours(23, 59, 59, 999);
     }
+
+    // Running AI compilation consumes the plan allowance.
+    const usageError = await enforceUsageLimit(user.workspaceId, "reports");
+    if (usageError) return usageError;
 
     // Fetch feedbacks for the period
     const feedback = await prisma.feedback.findMany({
@@ -102,7 +117,7 @@ export async function POST(
       content,
     });
   } catch (error) {
-    console.error("Compilation error:", error);
+    logger.error("Compilation error", { error });
     return NextResponse.json(
       { error: "Failed to compile report" },
       { status: 500 }

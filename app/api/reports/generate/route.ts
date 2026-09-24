@@ -4,6 +4,9 @@ import { generateVoCReport } from "@/lib/ai";
 import { NextResponse } from "next/server";
 import type { FeedbackItem } from "@/lib/ai";
 import { GenerateReportSchema, parseBody } from "@/lib/validations";
+import { enforceRateLimit } from "@/lib/rateLimit";
+import { enforceUsageLimit } from "@/lib/plans";
+import { logger } from "@/lib/logger";
 
 function parsePeriodDate(value: string, endOfDay: boolean) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -28,6 +31,14 @@ export async function POST(request: Request) {
     if (!user?.workspaceId) {
       return NextResponse.json({ error: "No workspace" }, { status: 400 });
     }
+
+    const rateLimitError = await enforceRateLimit({
+      key: `reports-generate:user:${session.user.id}`,
+      limit: 5,
+      windowSeconds: 60,
+      label: "Report generation",
+    });
+    if (rateLimitError) return rateLimitError;
 
     const result = await parseBody(request, GenerateReportSchema);
     if ("error" in result) return result.error;
@@ -72,6 +83,10 @@ export async function POST(request: Request) {
         content: null,
       });
     }
+
+    // Saving a config is free; running AI analysis consumes the plan allowance.
+    const usageError = await enforceUsageLimit(user.workspaceId, "reports");
+    if (usageError) return usageError;
 
     const feedback = await prisma.feedback.findMany({
       where: {
@@ -133,7 +148,7 @@ export async function POST(request: Request) {
       content,
     });
   } catch (error) {
-    console.error("Report generation error:", error);
+    logger.error("Report generation error", { error });
     return NextResponse.json(
       { error: "Failed to generate report" },
       { status: 500 }

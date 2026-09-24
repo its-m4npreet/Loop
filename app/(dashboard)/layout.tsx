@@ -18,8 +18,23 @@ export default async function DashboardGroupLayout({
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, email: true, image: true },
+    select: {
+      name: true,
+      email: true,
+      image: true,
+      isActive: true,
+      workspaceId: true,
+      skipOnboarding: true,
+    },
   })
+
+  if (!user || !user.isActive) {
+    redirect("/api/auth")
+  }
+
+  if (!user.workspaceId && !user.skipOnboarding) {
+    redirect("/onboarding")
+  }
 
   return (
     <DashboardLayout

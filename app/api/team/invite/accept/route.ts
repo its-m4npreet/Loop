@@ -42,6 +42,7 @@ export async function POST(req: Request) {
         passwordHash,
         role: invitation.role,
         workspaceId: invitation.workspaceId,
+        emailVerified: new Date(),
       },
     }),
     prisma.invitation.update({

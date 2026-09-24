@@ -9,6 +9,11 @@ const footerLinks = {
   Legal: ["Privacy Policy", "Terms", "Security", "DPA"],
 }
 
+const legalLinkHrefs: Record<string, string> = {
+  "Privacy Policy": "/privacy",
+  Terms: "/terms",
+}
+
 export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white">
@@ -51,7 +56,7 @@ export function Footer() {
                 {links.map((link) => (
                   <li key={link}>
                     <Link
-                      href="#"
+                      href={legalLinkHrefs[link] ?? "#"}
                       className="text-sm text-slate-500 transition-colors hover:text-slate-900"
                     >
                       {link}

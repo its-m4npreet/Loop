@@ -295,6 +295,16 @@ export function parseFeedbackCsv(
       errors.push(`Row ${lineNum}: rating out of range (0–5), ignored.`)
     }
 
+    const responseTime = parseOptionalInt(record.responseTime)
+    if (responseTime != null && (responseTime < 0 || responseTime > 100_000)) {
+      errors.push(`Row ${lineNum}: response time out of range (0–100000 min), ignored.`)
+    }
+
+    const createdAt = parseOptionalDate(record.createdAt)
+    if (createdAt && createdAt.getTime() > Date.now() + 86_400_000) {
+      errors.push(`Row ${lineNum}: date is in the future, ignored.`)
+    }
+
     rows.push({
       content: content.slice(0, 10000),
       channel,
@@ -306,8 +316,11 @@ export function parseFeedbackCsv(
         satisfaction != null && satisfaction >= 0 && satisfaction <= 5
           ? satisfaction
           : undefined,
-      responseTime: parseOptionalInt(record.responseTime),
-      createdAt: parseOptionalDate(record.createdAt),
+      responseTime:
+        responseTime != null && responseTime >= 0 && responseTime <= 100_000
+          ? responseTime
+          : undefined,
+      createdAt,
       sourceRef: record.sourceRef?.trim().slice(0, 200) || undefined,
     })
   })

@@ -13,6 +13,7 @@ import {
   FileText,
   Users,
   Settings,
+  CreditCard,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -39,6 +40,7 @@ const navItems: NavItem[] = [
   { id: 'ask-loop',        label: 'Ask LOOP',       icon: Bot,             href: '/ask-loop' },
   { id: 'reports',         label: 'Reports',        icon: FileText,        href: '/reports' },
   { id: 'team',            label: 'Team',           icon: Users,           href: '/team' },
+  // { id: 'billing',         label: 'Billing',        icon: CreditCard,      href: '/settings/billing' },
   { id: 'settings',        label: 'Settings',       icon: Settings,        href: '/settings' },
 ];
 

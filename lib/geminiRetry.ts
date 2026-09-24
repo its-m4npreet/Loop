@@ -3,6 +3,8 @@
  * Handles 429 (rate limit) and 5xx (server) errors with exponential backoff.
  */
 
+import { logger } from "@/lib/logger"
+
 interface RetryOptions {
   maxRetries?: number
   baseDelayMs?: number
@@ -60,9 +62,12 @@ export async function withRetry<T>(
         throw error
       }
       const delay = getRetryDelay(error, attempt, opts)
-      console.warn(
-        `[Gemini] Retryable error (attempt ${attempt + 1}/${opts.maxRetries}), waiting ${Math.round(delay / 1000)}s...`
-      )
+      logger.warn("Gemini retryable error, backing off", {
+        attempt: attempt + 1,
+        maxRetries: opts.maxRetries,
+        delaySeconds: Math.round(delay / 1000),
+        error: error instanceof Error ? error.message : String(error),
+      })
       await sleep(delay)
     }
   }
@@ -90,10 +95,12 @@ export async function withStreamRetry<T>(
         throw error
       }
       const delay = getRetryDelay(error, attempt, opts)
-      console.warn(
-        `[Gemini Stream] Retryable error (attempt ${attempt + 1}/${opts.maxRetries}), waiting ${Math.round(delay / 1000)}s...`,
-        error instanceof Error ? error.message : error
-      )
+      logger.warn("Gemini stream retryable error, backing off", {
+        attempt: attempt + 1,
+        maxRetries: opts.maxRetries,
+        delaySeconds: Math.round(delay / 1000),
+        error: error instanceof Error ? error.message : String(error),
+      })
       await sleep(delay)
     }
   }

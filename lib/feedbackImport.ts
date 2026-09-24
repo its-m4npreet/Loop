@@ -22,7 +22,8 @@ export interface FeedbackInput {
 
 export interface ImportContext {
   workspaceId: string
-  importedById: string
+  /** User who performed the import; optional for API-key ingestion. */
+  importedById?: string | null
 }
 
 export interface ImportedFeedbackResult {
@@ -138,7 +139,7 @@ export async function importSingleFeedback(
       sentiment: "NEUTRAL",
       sentimentScore: 0,
       workspaceId: ctx.workspaceId,
-      importedById: ctx.importedById,
+      importedById: ctx.importedById ?? null,
     },
   })
 
@@ -257,7 +258,7 @@ export async function importFeedbackBatch(
               sentimentScore: analysis.sentimentScore,
               featureArea: analysis.featureArea,
               workspaceId: ctx.workspaceId,
-              importedById: ctx.importedById,
+              importedById: ctx.importedById ?? null,
             },
           })
 
@@ -299,7 +300,7 @@ export async function importFeedbackBatch(
               sentimentScore: analysis.sentimentScore,
               featureArea: analysis.featureArea,
               workspaceId: ctx.workspaceId,
-              importedById: ctx.importedById,
+              importedById: ctx.importedById ?? null,
             },
           })
           items.push({

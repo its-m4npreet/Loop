@@ -18,11 +18,27 @@ enum Role {
   VIEWER
 }
 
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
+}
+
 model Workspace {
-  id          String   @id @default(cuid())
-  name        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Billing. Plan is synced from Razorpay via webhooks; usage counters
+  // track the current monthly window (see lib/plans.ts).
+  plan                   Plan      @default(FREE)
+  razorpayCustomerId     String?
+  razorpaySubscriptionId String?
+  usagePeriodStart       DateTime?
+  askLoopUsed          Int       @default(0)
+  reportsUsed          Int       @default(0)
+  importsUsed          Int       @default(0)
 
   users       User[]
   feedbacks   Feedback[]
@@ -30,7 +46,7 @@ model Workspace {
   reports     Report[]
   invitations Invitation[]
   askLoopConversations AskLoopConversation[]
-  conversations Conversation[]
+  apiKeys     ApiKey[]
 }
 
 model User {
@@ -40,20 +56,21 @@ model User {
   emailVerified DateTime?
   image         String?
   passwordHash  String?
-  role          Role      @default(VIEWER)
-  workspaceId   String?
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role            Role      @default(VIEWER)
+  workspaceId     String?
+  isActive        Boolean   @default(true)
+  skipOnboarding  Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  accounts         Account[]
-  sessions         Session[]
-  workspace        Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  reports          Report[]
-  invitedUsers     Invitation[] @relation("InvitedBy")
-  importedFeedback Feedback[]  @relation("ImportedBy")
-  askLoopConversations AskLoopConversation[]
-  conversations    Conversation[]
+  accounts              Account[]
+  sessions              Session[]
+  passwordResetTokens   PasswordResetToken[]
+  workspace             Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  reports               Report[]
+  invitedUsers          Invitation[] @relation("InvitedBy")
+  importedFeedback      Feedback[]  @relation("ImportedBy")
+  askLoopConversations  AskLoopConversation[]
 }
 
 model Account {
@@ -89,6 +106,19 @@ model VerificationToken {
   expires    DateTime
 
   @@id([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // ── Analytics & Reports Models ──
@@ -132,7 +162,6 @@ model Feedback {
   importedBy   User?     @relation("ImportedBy", fields: [importedById], references: [id], onDelete: SetNull)
 
   themes FeedbackTheme[]
-  embedding Embedding?
 
   @@index([workspaceId])
   @@index([workspaceId, createdAt])
@@ -241,41 +270,21 @@ model Invitation {
   @@index([email])
 }
 
-model Embedding {
-  id         String   @id @default(cuid())
-  feedbackId String   @unique
-  vector     String   @db.Text
-  model      String   @default("gemini-embedding-2")
-  createdAt  DateTime @default(now())
+// ── API Key model (programmatic feedback ingestion) ──
 
-  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
-  @@index([feedbackId])
-}
+model ApiKey {
+  id            String    @id @default(cuid())
+  name          String
+  keyHash       String    @unique
+  keyPrefix     String
+  // Encrypted copy so admins can reveal the full key again (see lib/apiKeys.ts)
+  keyCiphertext String?   @db.Text
+  lastUsedAt    DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime  @default(now())
 
-model Conversation {
-  id          String    @id @default(cuid())
-  title       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  userId      String
   workspaceId String
-
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  messages    Message[]
 
-  @@index([userId])
   @@index([workspaceId])
-}
-
-model Message {
-  id             String   @id @default(cuid())
-  role           String   // "user" | "assistant"
-  content        String   @db.Text
-  citationsJson  String?  @db.Text
-  createdAt      DateTime @default(now())
-  conversationId String
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  @@index([conversationId])
 }

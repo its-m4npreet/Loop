@@ -3,6 +3,9 @@ import { requireImportUser } from "@/lib/importAuth"
 import { parseFeedbackCsv } from "@/lib/csvParse"
 import { importFeedbackBatch, type FeedbackInput } from "@/lib/feedbackImport"
 import { hasPermission } from "@/lib/permissions"
+import { enforceRateLimit } from "@/lib/rateLimit"
+import { enforceUsageLimit } from "@/lib/plans"
+import { logger } from "@/lib/logger"
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024
 const MAX_ROWS = 5000
@@ -19,6 +22,14 @@ export async function POST(req: Request) {
         { status: 403 }
       )
     }
+
+    const rateLimitError = await enforceRateLimit({
+      key: `feedback-import:user:${user.id}`,
+      limit: 10,
+      windowSeconds: 60,
+      label: "CSV import",
+    })
+    if (rateLimitError) return rateLimitError
 
     const contentType = req.headers.get("content-type") || ""
     let csvText: string
@@ -93,6 +104,10 @@ export async function POST(req: Request) {
       theme: r.theme,
     }))
 
+    // Consume the monthly import allowance for the whole batch at once.
+    const usageError = await enforceUsageLimit(user.workspaceId, "imports", inputs.length)
+    if (usageError) return usageError
+
     const result = await importFeedbackBatch(inputs, {
       workspaceId: user.workspaceId,
       importedById: user.id,
@@ -112,7 +127,7 @@ export async function POST(req: Request) {
       message: `${result.imported} Records Imported · ${result.imported} Successful · ${failed} Failed · Analyze Complete`,
     })
   } catch (err) {
-    console.error("CSV import failed:", err)
+    logger.error("CSV import failed", { error: err })
     return NextResponse.json(
       { error: "Import failed. Please check the file format and try again." },
       { status: 500 }

@@ -11,24 +11,22 @@ import {
   type DragEvent,
 } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import {
   PlusCircle,
   Upload,
-  Radio,
   X,
   FileSpreadsheet,
   CheckCircle2,
   AlertCircle,
   Download,
   Loader2,
-  Ticket,
-  Smartphone,
-  ClipboardList,
   Sparkles,
+  KeyRound,
 } from 'lucide-react'
 import { IMPORT_CHANNELS } from '@/lib/importConstants'
 
-type MethodId = 'manual' | 'csv' | 'simulate'
+type MethodId = 'manual' | 'csv'
 
 interface ImportFeedbackClientProps {
   canImport: boolean
@@ -58,33 +56,6 @@ Need dark mode on web,Survey Response,Sarah,4,2026-07-02
 Billing page crashes on checkout,App Review,Alex,2,2026-07-03
 `
 
-const SIM_SOURCES = [
-  {
-    id: 'support-tickets',
-    label: 'Support Tickets',
-    description: 'Simulated helpdesk tickets with realistic issues',
-    icon: Ticket,
-    color: '#60A5FA',
-    bg: '#EFF6FF',
-  },
-  {
-    id: 'app-reviews',
-    label: 'App Reviews',
-    description: 'Simulated App Store / Play Store reviews',
-    icon: Smartphone,
-    color: '#A78BFA',
-    bg: '#F5F3FF',
-  },
-  {
-    id: 'surveys',
-    label: 'Survey Responses',
-    description: 'Simulated NPS and CSAT survey answers',
-    icon: ClipboardList,
-    color: '#FB923C',
-    bg: '#FFF7ED',
-  },
-] as const
-
 export default function ImportFeedbackClient({
   canImport,
   canManual,
@@ -94,10 +65,10 @@ export default function ImportFeedbackClient({
   const searchParams = useSearchParams()
   const [active, setActive] = useState<MethodId | null>(null)
 
-  // Open method from query: ?method=csv|manual|simulate
+  // Open method from query: ?method=csv|manual
   useEffect(() => {
     const m = searchParams.get('method')
-    if (m === 'csv' || m === 'manual' || m === 'simulate') {
+    if (m === 'csv' || m === 'manual') {
       setActive(m)
     }
     if (searchParams.get('upload') === 'csv') {
@@ -123,7 +94,7 @@ export default function ImportFeedbackClient({
           <div>
             <h1 className="page-title">Import Feedback</h1>
             <p className="page-subtitle">
-              Add customer feedback via manual entry, CSV, or simulated channels.
+              Add customer feedback via manual entry or CSV upload.
             </p>
           </div>
         </div>
@@ -144,9 +115,9 @@ export default function ImportFeedbackClient({
         <div>
           <h1 className="page-title">Import Feedback</h1>
           <p className="page-subtitle">
-            Add customer feedback using manual entry, CSV upload, or simulated
-            channels. Every record is AI-analyzed and appears across Dashboard,
-            Inbox, Analytics, Ask LOOP, and Reports.
+            Add customer feedback using manual entry or CSV upload. Every record
+            is AI-analyzed and appears across Dashboard, Inbox, Analytics, Ask
+            LOOP, and Reports.
           </p>
         </div>
       </div>
@@ -198,28 +169,25 @@ export default function ImportFeedbackClient({
           </article>
         )}
 
-        {canBulk && (
-          <article className="import-method-card">
-            <div
-              className="import-method-icon"
-              style={{ background: '#F5F3FF', color: '#A78BFA' }}
-            >
-              <Radio size={22} />
-            </div>
-            <h2 className="import-method-title">Simulated Channels</h2>
-            <p className="import-method-desc">
-              Import sample feedback from predefined sources — Support Tickets,
-              App Reviews, and Survey Responses.
-            </p>
-            <button
-              type="button"
-              className="btn-primary import-method-btn"
-              onClick={() => setActive('simulate')}
-            >
-              Import
-            </button>
-          </article>
-        )}
+        <article className="import-method-card">
+          <div
+            className="import-method-icon"
+            style={{ background: '#F5F3FF', color: '#A78BFA' }}
+          >
+            <KeyRound size={22} />
+          </div>
+          <h2 className="import-method-title">Integrations</h2>
+          <p className="import-method-desc">
+            Send feedback into LOOP from your own apps with API keys. Every
+            record is AI-analyzed on save.
+          </p>
+          <Link
+            href="/settings/integrations"
+            className="btn-primary import-method-btn"
+          >
+            Manage keys
+          </Link>
+        </article>
       </div>
 
       {active === 'manual' && (
@@ -230,9 +198,6 @@ export default function ImportFeedbackClient({
       )}
       {active === 'csv' && (
         <CsvImportModal onClose={closeModal} onSuccess={afterSuccess} />
-      )}
-      {active === 'simulate' && (
-        <SimulateModal onClose={closeModal} onSuccess={afterSuccess} />
       )}
     </>
   )
@@ -658,137 +623,6 @@ function CsvImportModal({
               ) : (
                 'Import feedback'
               )}
-            </button>
-          </div>
-        </div>
-      )}
-    </ModalShell>
-  )
-}
-
-/* ───────────────── Simulated Channels ───────────────── */
-
-function SimulateModal({
-  onClose,
-  onSuccess,
-}: {
-  onClose: () => void
-  onSuccess: () => void
-}) {
-  const [loadingId, setLoadingId] = useState<string | null>(null)
-  const [error, setError] = useState('')
-  const [result, setResult] = useState<BulkResult | null>(null)
-
-  async function handleImport(sourceId: string, label: string) {
-    setError('')
-    setResult(null)
-    setLoadingId(sourceId)
-    try {
-      const res = await fetch('/api/feedback/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: sourceId }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error || 'Import failed.')
-        return
-      }
-      setResult({
-        title: `${label} Imported`,
-        imported: data.imported ?? 0,
-        successful: data.imported ?? 0,
-        failed: data.failed ?? 0,
-        analysisComplete: data.analysisComplete !== false,
-        warnings: data.warnings,
-      })
-      onSuccess()
-    } catch {
-      setError('Network error. Please try again.')
-    } finally {
-      setLoadingId(null)
-    }
-  }
-
-  return (
-    <ModalShell title="Simulated Channels" onClose={onClose} busy={!!loadingId}>
-      {result ? (
-        <SuccessBlock
-          title={result.title}
-          onDone={onClose}
-          extra={
-            <ul className="import-summary-list">
-              <li>
-                <strong>{result.imported}</strong> Feedback Records Added
-              </li>
-              <li className="import-summary-ok">
-                {result.analysisComplete
-                  ? 'AI Analysis Completed'
-                  : 'Analysis pending'}
-              </li>
-            </ul>
-          }
-          warnings={result.warnings}
-        />
-      ) : (
-        <div className="import-form">
-          <p className="import-hint">
-            Loads realistic sample feedback from local JSON (no live
-            integrations). Each import runs AI analysis and updates your
-            workspace.
-          </p>
-
-          <div className="import-sim-list">
-            {SIM_SOURCES.map((s) => {
-              const Icon = s.icon
-              const busy = loadingId === s.id
-              return (
-                <div key={s.id} className="import-sim-row">
-                  <div
-                    className="import-sim-icon"
-                    style={{ background: s.bg, color: s.color }}
-                  >
-                    <Icon size={18} />
-                  </div>
-                  <div className="import-sim-text">
-                    <strong>{s.label}</strong>
-                    <span>{s.description}</span>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    disabled={!!loadingId}
-                    onClick={() => handleImport(s.id, s.label)}
-                  >
-                    {busy ? (
-                      <>
-                        <Loader2 size={14} className="spin" />
-                        Importing…
-                      </>
-                    ) : (
-                      'Import'
-                    )}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-
-          {error && (
-            <div className="import-error" role="alert">
-              <AlertCircle size={14} />
-              {error}
-            </div>
-          )}
-
-          <div className="import-modal-footer">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={onClose}
-              disabled={!!loadingId}
-            >
-              Close
             </button>
           </div>
         </div>

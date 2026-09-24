@@ -4,6 +4,9 @@ import { importSingleFeedback } from "@/lib/feedbackImport"
 import { IMPORT_CHANNELS } from "@/lib/importConstants"
 import { hasPermission } from "@/lib/permissions"
 import { ManualFeedbackSchema, parseBody } from "@/lib/validations"
+import { enforceRateLimit } from "@/lib/rateLimit"
+import { enforceUsageLimit } from "@/lib/plans"
+import { logger } from "@/lib/logger"
 
 export async function POST(req: Request) {
   try {
@@ -17,6 +20,14 @@ export async function POST(req: Request) {
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
+
+    const rateLimitError = await enforceRateLimit({
+      key: `feedback-manual:user:${user.id}`,
+      limit: 30,
+      windowSeconds: 60,
+      label: "Manual feedback entry",
+    })
+    if (rateLimitError) return rateLimitError
 
     const result = await parseBody(req, ManualFeedbackSchema)
     if ("error" in result) return result.error
@@ -32,6 +43,9 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
+
+    const usageError = await enforceUsageLimit(user.workspaceId, "imports")
+    if (usageError) return usageError
 
     const result2 = await importSingleFeedback(
       {
@@ -50,7 +64,7 @@ export async function POST(req: Request) {
       feedback: result2,
     })
   } catch (err) {
-    console.error("Manual feedback import failed:", err)
+    logger.error("Manual feedback import failed", { error: err })
     return NextResponse.json(
       { error: "Failed to save feedback. Please try again." },
       { status: 500 }

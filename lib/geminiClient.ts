@@ -1,11 +1,12 @@
 /**
  * Shared Gemini client helpers.
- * Model name comes from GEMINI_MODEL (default: gemini-2.5-flash).
+ * Model name comes from GEMINI_MODEL (default: gemini-3.6-flash).
+ * gemini-2.5-flash is no longer available to new API keys (404).
  */
 
 import { GoogleGenerativeAI, type GenerativeModel } from "@google/generative-ai"
 
-const DEFAULT_MODEL = "gemini-2.5-flash"
+const DEFAULT_MODEL = "gemini-3.6-flash"
 
 export function getGeminiModelName(): string {
   const fromEnv = process.env.GEMINI_MODEL?.trim()
@@ -13,7 +14,7 @@ export function getGeminiModelName(): string {
 }
 
 function getApiKey(): string | null {
-  return process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY || null
+  return process.env.GEMINI_API_KEY || null
 }
 
 /**

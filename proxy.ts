@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const protectedRoutes = [
   '/dashboard',
+  '/onboarding',
   '/analytics',
   '/ask-loop',
   '/feedback-inbox',
@@ -38,6 +39,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     '/dashboard/:path*',
+    '/onboarding/:path*',
     '/analytics/:path*',
     '/ask-loop/:path*',
     '/feedback-inbox/:path*',

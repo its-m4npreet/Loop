@@ -174,7 +174,17 @@ function feedbackStatus(): "NEW" | "REVIEWED" | "ACTIONED" {
   return "ACTIONED";
 }
 
+function assertSafeToSeed() {
+  if (process.env.NODE_ENV === "production" && !process.env.ALLOW_PROD_SEED) {
+    throw new Error(
+      "Refusing to seed production DB. The seed wipes existing rows. " +
+        "Set ALLOW_PROD_SEED=true only if you intentionally want demo data in this database."
+    )
+  }
+}
+
 async function main() {
+  assertSafeToSeed()
   console.log("🌱 Seeding database...\n");
 
   // ── Clean existing data ──
@@ -206,6 +216,7 @@ async function main() {
       passwordHash: adminHash,
       role: "ADMIN",
       workspaceId: workspace.id,
+      emailVerified: new Date(),
     },
   });
 
@@ -216,6 +227,7 @@ async function main() {
       passwordHash: analystHash,
       role: "ANALYST",
       workspaceId: workspace.id,
+      emailVerified: new Date(),
     },
   });
 
@@ -226,6 +238,7 @@ async function main() {
       passwordHash: viewerHash,
       role: "VIEWER",
       workspaceId: workspace.id,
+      emailVerified: new Date(),
     },
   });
   console.log("  ✓ Created 3 users (admin, analyst, viewer)");

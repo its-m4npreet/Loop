@@ -17,7 +17,7 @@ export default async function SettingsPage() {
       name: true,
       email: true,
       role: true,
-      workspace: { select: { name: true } },
+      workspace: { select: { name: true, plan: true } },
     },
   })
   if (!user) redirect('/api/auth')
@@ -87,6 +87,38 @@ export default async function SettingsPage() {
 
         {/* Notifications — only two toggles */}
         <SettingsClient />
+
+        {/* Billing */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">Billing</h2>
+          <div className="settings-card">
+            <div className="settings-item">
+              <div className="settings-item-text">
+                <div className="settings-item-label">Plan</div>
+                <div className="settings-item-desc">
+                  {user.workspace
+                    ? `${
+                        user.workspace.plan === 'PRO'
+                          ? 'Professional'
+                          : user.workspace.plan === 'BUSINESS'
+                            ? 'Business'
+                            : 'Free'
+                      } plan — track monthly usage, upgrade, and manage invoices`
+                    : 'Join a workspace to manage billing'}
+                </div>
+              </div>
+              <div className="settings-item-right">
+                {user.workspace ? (
+                  <Link href="/settings/billing" className="settings-item-btn">
+                    Manage billing
+                  </Link>
+                ) : (
+                  <span className="settings-item-value">—</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Danger */}
         <section className="settings-section">

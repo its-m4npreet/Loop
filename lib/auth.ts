@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
 import { compare } from "bcryptjs"
 import { prisma } from "./prisma"
+import { checkRateLimit } from "./rateLimit"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -11,21 +12,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/api/auth",
   },
   providers: [
-    Google({ allowDangerousEmailAccountLinking: true }),
+    Google({}),
     Credentials({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) return null
 
+        // Rate limit per-IP via the Request passed in by NextAuth.
+        const ip =
+          request?.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          request?.headers?.get("x-real-ip") ||
+          "unknown"
+
+        const allowed = await checkRateLimit({
+          key: `credentials-login:ip:${ip}`,
+          limit: 10,
+          windowSeconds: 300,
+          label: "Sign-in attempts",
+        })
+        if (!allowed.success) return null
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: (credentials.email as string).trim().toLowerCase() },
         })
 
         if (!user || !user.isActive || !user.passwordHash) return null
+
+        if (!user.emailVerified) return null
 
         const isValid = await compare(
           credentials.password as string,
@@ -79,9 +96,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (session.user && token.id) {
+        // Re-check fresh DB state so deactivation & role changes apply
+        // immediately instead of lingering for the 30-day JWT lifetime.
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { isActive: true, role: true },
+        })
+
+        if (!dbUser || !dbUser.isActive) {
+          // Inactive or deleted user — expire the session so guards reject.
+          session.expires = new Date(0).toISOString() as never
+          return session
+        }
+
         session.user.id = token.id as string
-        session.user.role = token.role as string
+        session.user.role = dbUser.role
       }
       return session
     },
@@ -92,3 +122,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
 })
+

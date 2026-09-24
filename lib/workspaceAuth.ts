@@ -30,8 +30,14 @@ export async function requireWorkspaceUser(): Promise<AuthSuccess | AuthFailure>
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, workspaceId: true },
+    select: { id: true, role: true, workspaceId: true, isActive: true },
   })
+
+  if (!user || !user.isActive) {
+    return {
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    }
+  }
 
   if (!user?.workspaceId) {
     return {

@@ -5,6 +5,7 @@ import crypto from "crypto"
 import { sendInviteEmail } from "@/lib/mail"
 import { Role } from "@/lib/permissions"
 import { InviteMemberSchema, parseBody } from "@/lib/validations"
+import { enforceSeatLimit } from "@/lib/plans"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -50,6 +51,10 @@ export async function POST(req: Request) {
   }
 
   const assignedRole: Role = role as Role
+
+  // Only create new invites while seats remain on the current plan.
+  const seatError = await enforceSeatLimit(currentUser.workspaceId)
+  if (seatError) return seatError
 
   const token = crypto.randomBytes(32).toString("hex")
   const expiresAt = new Date()

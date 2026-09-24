@@ -1,5 +1,6 @@
 import { withRetry } from "@/lib/geminiRetry"
 import { createGeminiModelOptional } from "@/lib/geminiClient"
+import { logger } from "@/lib/logger"
 
 export type SentimentLabel = "POSITIVE" | "NEUTRAL" | "NEGATIVE"
 
@@ -174,7 +175,7 @@ Feedback: """${content.slice(0, 2000)}"""`
           : fallback.confidence,
     }
   } catch (err) {
-    console.warn("AI feedback analysis failed, using heuristic:", err)
+    logger.warn("AI feedback analysis failed, using heuristic", { error: err })
     return fallback
   }
 }

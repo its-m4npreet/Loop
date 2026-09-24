@@ -1,5 +1,6 @@
 import { withRetry } from "@/lib/geminiRetry";
 import { createGeminiModel } from "@/lib/geminiClient";
+import { logger } from "@/lib/logger";
 
 // ── Types ──
 export interface FeedbackItem {
@@ -170,7 +171,9 @@ Generate a JSON response with this exact structure (no markdown fences, just raw
       generatedAt,
     };
   } catch (error) {
-    console.error("AI report generation failed, returning stats-only report:", error);
+    logger.error("AI report generation failed, returning stats-only report", {
+      error,
+    });
 
     // Fallback: return pre-computed stats without AI narrative
     return {
